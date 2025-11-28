@@ -4,7 +4,9 @@
   "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node server.ts",
+    "dev": "ts-node server.ts"
   },
   "repository": {
     "type": "git",
@@ -17,5 +19,14 @@
   "bugs": {
     "url": "https://gitlab.com/dtonys-group/web-2026/issues"
   },
-  "homepage": "https://gitlab.com/dtonys-group/web-2026#readme"
+  "homepage": "https://gitlab.com/dtonys-group/web-2026#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
 }
