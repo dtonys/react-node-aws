@@ -28,6 +28,7 @@
   "homepage": "https://gitlab.com/dtonys-group/web-2026#readme",
   "dependencies": {
     "cookie-parser": "^1.4.7",
+    "date-fns": "^4.1.0",
     "express": "^5.1.0",
     "lodash": "^4.17.21"
   },
