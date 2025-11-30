@@ -1,0 +1,6 @@
+{
+  "watch": ["backend"],
+  "ext": "ts,json",
+  "ignore": ["node_modules", "dist", "public", "frontend"],
+  "delay": 1000
+}

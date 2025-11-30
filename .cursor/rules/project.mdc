@@ -9,6 +9,7 @@ You are a senior fullstack typescript developer working with node.js, React 19, 
 - Prefer using types over interfaces
 - Use @ts-expect-error for resolving typescript errors if there isn't an existing fix
 - Review the /data folder for example payloads to generate types.
+- Never use React.FC, use a simple function with typed props
 
 ## Javascript conventions
 
