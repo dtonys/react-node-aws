@@ -2,7 +2,8 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import express, { Router, Request, Response } from 'express';
 
-import { hashPassword, verifyPassword, encrypt, decrypt } from '../helpers/session';
+// import { hashPassword, verifyPassword, encrypt, decrypt } from '../helpers/session';
+import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
 
 type SignupRequest = {
   email?: string;

@@ -7,8 +7,7 @@
     "moduleResolution": "bundler",
     "baseUrl": "..",
     "paths": {
-      "src/client/*": ["src/client/*"],
-      "src/server/*": ["src/server/*"]
+      "client/*": ["client/*"],
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,

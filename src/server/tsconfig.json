@@ -4,12 +4,10 @@
     "module": "commonjs",
     "lib": ["ES2023"],
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": ".",
     "baseUrl": "..",
     "paths": {
-      "src/client/*": ["src/client/*"],
-      "src/server/*": ["src/server/*"],
-      "controllers/*": ["src/server/controllers/*"]
+      "server/*": ["server/*"],
     },
     "strict": true,
     "esModuleInterop": true,
