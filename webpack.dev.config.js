@@ -5,7 +5,7 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 module.exports = {
   mode: 'development',
   devtool: 'eval-cheap-module-source-map',
-  entry: './frontend/index.tsx',
+  entry: './src/client/index.tsx',
   output: {
     path: path.resolve(__dirname, 'public'),
     filename: 'js/[name].[contenthash].js',
@@ -14,6 +14,10 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
+    alias: {
+      'src/client': path.resolve(__dirname, 'src/client'),
+      'src/server': path.resolve(__dirname, 'src/server'),
+    },
   },
   module: {
     rules: [
@@ -68,7 +72,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './frontend/index.ejs',
+      template: './src/client/index.ejs',
       filename: 'index.html',
       templateParameters: {
         title: 'Web 2026',
@@ -81,7 +85,7 @@ module.exports = {
       directory: path.join(__dirname, 'public'),
     },
     compress: true,
-    port: 80,
+    port: 8080,
     hot: true,
     open: false,
     historyApiFallback: true,

@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --project backend/tsconfig.json",
-    "start": "node backend/dist/index.js",
-    "dev": "nodemon --exec 'ts-node --project backend/tsconfig.json --transpile-only' backend/index.ts",
+    "build": "tsc --project src/server/tsconfig.json",
+    "start": "node src/server/dist/index.js",
+    "dev": "nodemon --exec 'ts-node -r tsconfig-paths/register --project src/server/tsconfig.json --transpile-only' src/server/index.ts",
     "watch": "webpack serve --env development",
     "webpack:build": "webpack --env production"
   },
@@ -27,10 +27,16 @@
   },
   "homepage": "https://gitlab.com/dtonys-group/web-2026#readme",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.940.0",
+    "@aws-sdk/client-secrets-manager": "^3.940.0",
+    "@aws-sdk/lib-dynamodb": "^3.940.0",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "lodash": "^4.17.21"
+    "install": "^0.13.0",
+    "lodash": "^4.17.21",
+    "npm": "^11.6.4"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",
@@ -64,6 +70,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
     "html-webpack-plugin": "^5.6.5",
+    "jiti": "^2.6.1",
     "mini-css-extract-plugin": "^2.9.4",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.2",
@@ -74,6 +81,7 @@
     "sass-loader": "^16.0.6",
     "style-loader": "^4.0.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.48.0",
     "webpack": "^5.103.0",

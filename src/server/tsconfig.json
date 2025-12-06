@@ -5,6 +5,12 @@
     "lib": ["ES2023"],
     "outDir": "./dist",
     "rootDir": "./",
+    "baseUrl": "..",
+    "paths": {
+      "src/client/*": ["src/client/*"],
+      "src/server/*": ["src/server/*"],
+      "controllers/*": ["src/server/controllers/*"]
+    },
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

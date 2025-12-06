@@ -8,16 +8,43 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
   {
+    ignores: ['eslint.config.mts'],
+  },
+  {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     plugins: { js },
     extends: ['js/recommended'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
-  tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ['backend/**/*.{js,mjs,cjs,ts,mts,cts}'],
+    files: ['**/*.{ts,mts,cts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./src/server/tsconfig.json', './src/client/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    // Ignore unused variables starting with an underscore
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  pluginReact.configs.flat.recommended,
+  // Inject Node.js rules into the backend
+  {
+    files: ['src/server/**/*.{js,mjs,cjs,ts,mts,cts}'],
     ...pluginN.configs['flat/recommended-script'],
+    rules: {
+      'n/no-missing-import': 'off', // TypeScript handles import resolution
+    },
   },
   prettierConfig,
 ]);
