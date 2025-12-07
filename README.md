@@ -1,1 +1,1 @@
-![My Image](./src/client/images/RNA.png)
+![My Image](./src/client/images/RNA-white.png)
