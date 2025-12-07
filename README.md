@@ -1,1 +1,1 @@
-![My Image](./src/client/images/RNA-white.png)
+<img src="./src/client/images/RNA-white.png" width="200" />
