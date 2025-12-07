@@ -16,15 +16,19 @@ export default defineConfig([
     extends: ['js/recommended'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
-  ...tseslint.configs.recommendedTypeChecked,
-  {
-    files: ['**/*.{ts,mts,cts,tsx}'],
+  ...tseslint.configs.recommendedTypeChecked.map((config: any) => ({
+    ...config,
     languageOptions: {
+      ...config.languageOptions,
       parserOptions: {
+        ...config.languageOptions!.parserOptions,
         project: ['./src/server/tsconfig.json', './src/client/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  })),
+  {
+    files: ['**/*.{ts,mts,cts,tsx}'],
     // Ignore unused variables starting with an underscore
     rules: {
       '@typescript-eslint/no-unused-vars': [

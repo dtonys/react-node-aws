@@ -1,8 +1,7 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import express, { Router, Request, Response } from 'express';
+import lodashOmit from 'lodash/omit';
 
-// import { hashPassword, verifyPassword, encrypt, decrypt } from '../helpers/session';
 import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
 
 type SignupRequest = {
@@ -17,34 +16,37 @@ type LoginRequest = {
 };
 
 type AuthRecord = {
-  PK: string;
-  SK: string;
+  email: string;
+  type: string;
   passwordHash?: string;
   createdAt: string;
 };
 
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
+type AuthControllerConfig = {
+  dynamoDocClient: DynamoDBDocument;
+};
 class AuthController {
-  private static dynamoDB: DynamoDB = new DynamoDB({ region: 'us-west-1' });
   private static dynamoDocClient: DynamoDBDocument;
-  private static authTable: string = 'web-users.sessions';
+  private static authTable: string = 'email-type';
   private static sessionCookieName: string = 'web.session';
 
-  static init() {
-    this.dynamoDocClient = DynamoDBDocument.from(this.dynamoDB);
+  static init({ dynamoDocClient }: AuthControllerConfig) {
+    this.dynamoDocClient = dynamoDocClient;
 
     const router: Router = express.Router();
     router.post('/signup', this.signup);
     router.post('/login', this.login);
     router.post('/logout', this.logout);
+    router.get('/session', this.sessionInfo);
     return router;
   }
 
   static createSession = async (res: Response, email: string) => {
     const sessionToken = encrypt(email);
     const session = {
-      PK: email,
-      SK: `SESSION#${sessionToken}`,
+      email,
+      type: `SESSION#${sessionToken}`,
       createdAt: new Date().toISOString(),
       timeToLive: Math.floor(Date.now() / 1000) + _30_DAYS_SECONDS, // 30 days
     };
@@ -62,9 +64,13 @@ class AuthController {
 
   static deleteSession = (sessionToken: string) => {
     const email = decrypt(sessionToken);
+    console.log('deleting session', {
+      email: email,
+      type: `SESSION#${sessionToken}`,
+    });
     void this.dynamoDocClient.delete({
       TableName: this.authTable,
-      Key: { PK: email, SK: `SESSION#${sessionToken}` },
+      Key: { email: email, type: `SESSION#${sessionToken}` },
     });
   };
 
@@ -78,18 +84,17 @@ class AuthController {
     }
     const hashedPassword = await hashPassword(password);
     const user = {
-      PK: email,
-      SK: 'USER',
+      email,
+      type: 'USER',
       passwordHash: hashedPassword,
       createdAt: new Date().toISOString(),
     };
-    console.log(user);
     // Save new user
     await this.dynamoDocClient.put({
       TableName: this.authTable,
       Item: user,
       ConditionExpression: 'attribute_not_exists(#email)',
-      ExpressionAttributeNames: { '#email': 'PK' },
+      ExpressionAttributeNames: { '#email': 'email' },
     });
     // Create session
     const sessionToken = await this.createSession(res, email);
@@ -103,7 +108,7 @@ class AuthController {
     }
     const response = await this.dynamoDocClient.get({
       TableName: this.authTable,
-      Key: { PK: email, SK: 'USER' },
+      Key: { email, type: 'USER' },
     });
     const user = response.Item as AuthRecord | undefined;
     if (!user) {
@@ -124,6 +129,34 @@ class AuthController {
       this.deleteSession(cookieSessionToken);
     }
     res.json({});
+  };
+
+  static sessionInfo = async (req: Request, res: Response) => {
+    const cookieSessionToken = req.cookies[this.sessionCookieName];
+    if (!cookieSessionToken) {
+      return res.json({ user: null, session: null });
+    }
+    try {
+      const email = decrypt(cookieSessionToken);
+      const getUser = this.dynamoDocClient.get({
+        TableName: this.authTable,
+        Key: { email, type: 'USER' },
+      });
+      const getSession = this.dynamoDocClient.get({
+        TableName: this.authTable,
+        Key: { email, type: `SESSION#${cookieSessionToken}` },
+      });
+      const [{ Item: user }, { Item: session }] = await Promise.all([getUser, getSession]);
+      if (!user || !session) {
+        return res.json({ user: null, session: null });
+      }
+      return res.json({
+        user: lodashOmit(user, 'passwordHash'),
+        session: lodashOmit(session, 'timeToLive'),
+      });
+    } catch (error) {
+      return res.json({ user: null, session: null });
+    }
   };
 }
 

@@ -1,11 +1,21 @@
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import express, { NextFunction, Request, Response, Router } from 'express';
 
 import AuthController from './controllers/auth';
+import { addDevLoggerMiddleware } from './helpers/dynamo';
 
 // API Routes
 const apiRoutes: Router = express.Router();
 
-apiRoutes.use('/auth', AuthController.init());
+// Setup DynamoDB clients
+const dynamoDB = new DynamoDB({ region: 'us-west-1' });
+const dynamoDocClient = DynamoDBDocument.from(dynamoDB);
+if (process.env.NODE_ENV === 'development') {
+  addDevLoggerMiddleware(dynamoDocClient);
+}
+
+apiRoutes.use('/auth', AuthController.init({ dynamoDocClient }));
 
 // Root endpoint
 apiRoutes.get('/', (_req: Request, res: Response) => {

@@ -1,15 +1,45 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
 import { useState } from 'react';
-import onLinkClick from '../../helpers/onLinkClick';
+import onLinkClick from 'client/helpers/onLinkClick';
+import rnaLogo from 'client/images/RNA.png';
 
-const Login = () => {
+type LoginProps = {
+  currentUser: Record<string, any>;
+};
+const Login = ({ currentUser }: LoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login:', { email, password });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Login failed');
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to styleguide on success
+      window.location.href = '/styleguide';
+    } catch (err) {
+      setError('An error occurred during login');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -24,6 +54,15 @@ const Login = () => {
           gap: 3,
         }}
       >
+        <Box
+          component="img"
+          src={rnaLogo}
+          alt="Logo"
+          sx={{
+            maxWidth: '50%',
+            height: 'auto',
+          }}
+        />
         <Typography variant="h4" component="h1" gutterBottom>
           Login
         </Typography>
@@ -48,8 +87,13 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <Button type="submit" variant="contained" fullWidth size="large">
-            Submit
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
+          <Button type="submit" variant="contained" fullWidth size="large" disabled={isLoading}>
+            {isLoading ? 'Logging in...' : 'Submit'}
           </Button>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Link href="/signup" onClick={onLinkClick} underline="hover">
@@ -60,6 +104,7 @@ const Login = () => {
             </Link>
           </Box>
         </Box>
+        <Box sx={{ height: '200px' }} />
       </Box>
     </Container>
   );

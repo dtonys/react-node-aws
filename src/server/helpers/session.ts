@@ -23,8 +23,7 @@ export function setEncryptionKey(key: string) {
   encryptionKey = key;
 }
 export function encrypt(email: string) {
-  if (!encryptionKey) throw new Error('Encryption key not set');
-  const key = Buffer.from(encryptionKey, 'base64');
+  const key = Buffer.from(encryptionKey!, 'base64');
   const iv = randomBytes(IV_LENGTH);
 
   const cipher = createCipheriv(ALGO, key, iv);
@@ -32,7 +31,8 @@ export function encrypt(email: string) {
   const authTag = cipher.getAuthTag();
 
   const packed = Buffer.concat([iv, authTag, ciphertext]);
-  return packed.toString('base64url');
+  const encrypted = packed.toString('base64url');
+  return encrypted;
 }
 
 export function decrypt(token: string) {

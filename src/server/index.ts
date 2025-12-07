@@ -1,13 +1,15 @@
 import path from 'node:path';
 import express, { Application, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
-import apiRoutes from './routes';
-import { loadSecrets } from './helpers/secrets';
 import dotenv from 'dotenv';
-import { setEncryptionKey } from './helpers/session';
+dotenv.config();
+
+import { loadSecrets } from 'server/helpers/secrets';
+import { setEncryptionKey } from 'server/helpers/session';
+import apiRoutes from 'server/routes';
 
 // Setup express app
-dotenv.config();
+console.log('NODE_ENV', process.env.NODE_ENV);
 const app: Application = express();
 
 const publicDir = path.join(__dirname, '../public');
