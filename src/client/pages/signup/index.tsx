@@ -1,6 +1,6 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
 import { useState } from 'react';
-import onLinkClick from '../../helpers/onLinkClick';
+import { onLinkClick } from '../../helpers/routing';
 
 const Signup = () => {
   const [email, setEmail] = useState('');

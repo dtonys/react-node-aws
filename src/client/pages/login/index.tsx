@@ -1,12 +1,14 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
-import { useState } from 'react';
-import onLinkClick from 'client/helpers/onLinkClick';
+import { RefObject, useState } from 'react';
+import { onLinkClick, replaceState } from 'client/helpers/routing';
+import fetchClient from 'client/helpers/fetchClient';
 import rnaLogo from 'client/images/RNA.png';
+import { LoginRequest } from 'shared/types/auth';
 
 type LoginProps = {
-  currentUser: Record<string, any>;
+  loadCookieSession: () => Promise<void>;
 };
-const Login = ({ currentUser }: LoginProps) => {
+const Login = ({ loadCookieSession }: LoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,28 +18,14 @@ const Login = ({ currentUser }: LoginProps) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Login failed');
-        setIsLoading(false);
-        return;
-      }
-
-      // Redirect to styleguide on success
-      window.location.href = '/styleguide';
+      await fetchClient.post<LoginRequest>('/api/auth/login', { email, password });
+      await loadCookieSession();
+      // Redirect to home on success
+      replaceState('/');
     } catch (err) {
-      setError('An error occurred during login');
+      const error = err as Error & { data?: { message?: string } };
+      setError(error.data?.message || error.message || 'An error occurred during login');
       setIsLoading(false);
     }
   };

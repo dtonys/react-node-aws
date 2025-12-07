@@ -1,4 +1,5 @@
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, Button } from '@mui/material';
+import { useState } from 'react';
 import rnaLogo from 'client/images/RNA.png';
 
 type HomeProps = {
@@ -7,6 +8,21 @@ type HomeProps = {
 
 const Home = ({ currentUser }: HomeProps) => {
   const userEmail = currentUser?.email || '';
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout error:', err);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -35,6 +51,9 @@ const Home = ({ currentUser }: HomeProps) => {
         <Typography variant="body1" color="text.secondary">
           {userEmail}
         </Typography>
+        <Button variant="outlined" onClick={handleLogout} disabled={isLoading} sx={{ mt: 2 }}>
+          {isLoading ? 'Logging out...' : 'Logout'}
+        </Button>
       </Box>
     </Container>
   );

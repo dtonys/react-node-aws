@@ -8,6 +8,7 @@
     "baseUrl": "..",
     "paths": {
       "client/*": ["client/*"],
+      "shared/*": ["shared/*"],
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
@@ -19,7 +20,7 @@
     "noEmit": true,
     "types": ["react", "react-dom"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../shared/**/*.ts"],
   "exclude": ["node_modules", "dist", "build"]
 }
 

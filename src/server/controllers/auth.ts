@@ -3,24 +3,7 @@ import express, { Router, Request, Response } from 'express';
 import lodashOmit from 'lodash/omit';
 
 import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
-
-type SignupRequest = {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-};
-
-type LoginRequest = {
-  email?: string;
-  password?: string;
-};
-
-type AuthRecord = {
-  email: string;
-  type: string;
-  passwordHash?: string;
-  createdAt: string;
-};
+import { SignupRequest, LoginRequest, AuthRecord } from 'shared/types/auth';
 
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
 type AuthControllerConfig = {
@@ -75,7 +58,7 @@ class AuthController {
   };
 
   static signup = async (req: Request, res: Response) => {
-    const { email, password, confirmPassword } = req.body as SignupRequest;
+    const { email, password, confirmPassword } = req.body as Partial<SignupRequest>;
     if (!email || !password || !confirmPassword) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
@@ -102,7 +85,7 @@ class AuthController {
   };
 
   static login = async (req: Request, res: Response) => {
-    const { email, password } = req.body as LoginRequest;
+    const { email, password } = req.body as Partial<LoginRequest>;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
