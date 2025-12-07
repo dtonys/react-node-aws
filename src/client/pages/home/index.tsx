@@ -1,6 +1,6 @@
 import { Box, Container, Typography, Button } from '@mui/material';
 import { useState } from 'react';
-import rnaLogo from 'client/images/RNA.png';
+import rnaLogo from 'client/images/RNA-white-2.png';
 
 type HomeProps = {
   currentUser: Record<string, any> | null;
