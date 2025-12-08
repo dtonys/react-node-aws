@@ -10,31 +10,13 @@
   <img src="./src/client/images/Tech Stack.png" />
 </p>
 
-# Principles
+# Overview
 
-RNA is your low-abstraction, anti-framework boilerplate for production grade projects.
+Simple and clean foundation for production quality web applications.
 
-From frontend to backend, leverage the most robust set of technologies for your next web application.
+Minimal dependencies, with usage of web standard apis.
 
-RNA is a "batteries included" foundation, including deep backend and devops integration with Amazon Web Services.
-
-### Modern
-
-Latest and greatest web technologies are utilized, while not leaning into the bleeding edge of unstable tech.
-
-### Minimal
-
-Embrace web standards, simple solutions, and procedural programming.
-
-Reject OOP, layers of abstraction, and "black box" frameworks and libraries that trap you in unmaintainable, tightly coupled ecosystems.
-
-Every effort is made to reduce external dependencies to the bare minimum, while offering enough of a foundation to cover the rough edges.
-
-### Mainstream
-
-Only the most robust, stable, and upward trending libraries are included.
-
-NPM Trends is consulted for user traction and longevity before a new library is integrated.
+Featuring modern frontend, and connection to AWS cloud ecosystem, covering core components.
 
 # Quick Start
 
