@@ -3,7 +3,15 @@ import express, { Router, Request, Response } from 'express';
 import lodashOmit from 'lodash/omit';
 
 import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
-import { SignupRequest, LoginRequest, AuthRecord } from 'shared/types/auth';
+import {
+  SignupRequest,
+  LoginRequest,
+  UserRecord,
+  SessionRecord,
+  ForgotPasswordRequest,
+  VerifyEmailRequest,
+  ResetPasswordRequest,
+} from 'shared/types/auth';
 
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
 type AuthControllerConfig = {
@@ -16,18 +24,11 @@ class AuthController {
 
   static init({ dynamoDocClient }: AuthControllerConfig) {
     this.dynamoDocClient = dynamoDocClient;
-
-    const router: Router = express.Router();
-    router.post('/signup', this.signup);
-    router.post('/login', this.login);
-    router.post('/logout', this.logout);
-    router.get('/session', this.sessionInfo);
-    return router;
   }
 
-  static createSession = async (res: Response, email: string) => {
+  static createSession = async (email: string) => {
     const sessionToken = encrypt(email);
-    const session = {
+    const session: SessionRecord = {
       email,
       type: `SESSION#${sessionToken}`,
       createdAt: new Date().toISOString(),
@@ -36,11 +37,6 @@ class AuthController {
     await this.dynamoDocClient.put({
       TableName: this.authTable,
       Item: session,
-    });
-    res.cookie(this.sessionCookieName, sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: _30_DAYS_SECONDS * 1000,
     });
     return sessionToken;
   };
@@ -66,12 +62,18 @@ class AuthController {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
     const hashedPassword = await hashPassword(password);
-    const user = {
+    const emailVerifiedToken = encrypt(email);
+    const user: UserRecord = {
       email,
       type: 'USER',
       passwordHash: hashedPassword,
       createdAt: new Date().toISOString(),
+      emailVerified: false,
+      emailVerifiedToken,
+      resetPasswordToken: null,
     };
+    // send email with embedded verification token
+
     // Save new user
     await this.dynamoDocClient.put({
       TableName: this.authTable,
@@ -80,8 +82,46 @@ class AuthController {
       ExpressionAttributeNames: { '#email': 'email' },
     });
     // Create session
-    const sessionToken = await this.createSession(res, email);
+    const sessionToken = await this.createSession(email);
+    res.cookie(this.sessionCookieName, sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: _30_DAYS_SECONDS * 1000,
+    });
     res.json({ sessionToken });
+  };
+
+  static verifyEmail = async (req: Request, res: Response) => {
+    const { email, token } = req.query as Partial<VerifyEmailRequest>;
+    if (!email || !token) {
+      return res.status(400).json({ message: 'Email and token are required' });
+    }
+    await this.dynamoDocClient.update({
+      TableName: this.authTable,
+      Key: { email, type: 'USER' },
+      // check token is valid
+      ConditionExpression: '#emailVerifiedToken = :token',
+      // mark email as verified and clear token
+      UpdateExpression: 'SET #emailVerified = :true, #emailVerifiedToken = :null',
+      ExpressionAttributeValues: {
+        ':token': token,
+        ':true': true,
+        ':null': null,
+      },
+      ExpressionAttributeNames: {
+        '#emailVerified': 'emailVerified',
+        '#emailVerifiedToken': 'emailVerifiedToken',
+      },
+    });
+    // Create session
+    const sessionToken = await this.createSession(email);
+    res.cookie(this.sessionCookieName, sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: _30_DAYS_SECONDS * 1000,
+    });
+    res.json({});
+    // res.redirect('/');
   };
 
   static login = async (req: Request, res: Response) => {
@@ -93,15 +133,20 @@ class AuthController {
       TableName: this.authTable,
       Key: { email, type: 'USER' },
     });
-    const user = response.Item as AuthRecord | undefined;
+    const user = response.Item as UserRecord | undefined;
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    const isValid = await verifyPassword(password, user.passwordHash!);
+    const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    const sessionToken = await this.createSession(res, email);
+    const sessionToken = await this.createSession(email);
+    res.cookie(this.sessionCookieName, sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: _30_DAYS_SECONDS * 1000,
+    });
     res.json({ sessionToken });
   };
 
@@ -133,13 +178,67 @@ class AuthController {
       if (!user || !session) {
         return res.json({ user: null, session: null });
       }
+      const userRecord = user as UserRecord;
+      const sessionRecord = session as SessionRecord;
       return res.json({
-        user: lodashOmit(user, 'passwordHash'),
-        session: lodashOmit(session, 'timeToLive'),
+        user: lodashOmit(userRecord, 'passwordHash', 'emailVerifiedToken', 'resetPasswordToken'),
+        session: lodashOmit(sessionRecord, 'timeToLive'),
       });
     } catch (error) {
       return res.json({ user: null, session: null });
     }
+  };
+
+  static forgotPassword = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body as Partial<ForgotPasswordRequest>;
+      const resetPasswordToken = encrypt(email!);
+      await this.dynamoDocClient.update({
+        TableName: this.authTable,
+        Key: { email, type: 'USER' },
+        UpdateExpression: 'SET #resetPasswordToken = :resetPasswordToken',
+        ExpressionAttributeValues: {
+          ':resetPasswordToken': resetPasswordToken,
+        },
+        ExpressionAttributeNames: {
+          '#resetPasswordToken': 'resetPasswordToken',
+        },
+      });
+      // TODO: Send email with reset password token
+    } catch (error) {
+      // ignore errors, provide consistent response to prevent hackers from scanning for valid emails
+    } finally {
+      res.json({});
+    }
+  };
+
+  static resetPassword = async (req: Request, res: Response) => {
+    const { email, token, password, confirmPassword } = req.body as Partial<ResetPasswordRequest>;
+    if (!email || !token || !password || !confirmPassword) {
+      return res.status(400).json({ message: 'Email, token, password, and confirm password are required' });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+    const hashedPassword = await hashPassword(password);
+    await this.dynamoDocClient.update({
+      TableName: this.authTable,
+      Key: { email, type: 'USER' },
+      // check token is valid
+      ConditionExpression: '#resetPasswordToken = :token',
+      // set password hash and clear token
+      UpdateExpression: 'SET #passwordHash = :passwordHash, #resetPasswordToken = :null',
+      ExpressionAttributeValues: {
+        ':passwordHash': hashedPassword,
+        ':token': token,
+        ':null': null,
+      },
+      ExpressionAttributeNames: {
+        '#passwordHash': 'passwordHash',
+        '#resetPasswordToken': 'resetPasswordToken',
+      },
+    });
+    res.json({});
   };
 }
 

@@ -1,16 +1,35 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
 import { useState } from 'react';
-import { onLinkClick } from '../../helpers/routing';
+import { onLinkClick, replaceState } from 'client/helpers/routing';
+import fetchClient from 'client/helpers/fetchClient';
+import rnaLogo from 'client/images/RNA-white-2.png';
+import { SignupRequest } from 'shared/types/auth';
 
-const Signup = () => {
+type SignupProps = {
+  loadCookieSession: () => Promise<void>;
+};
+
+const Signup = ({ loadCookieSession }: SignupProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log('Signup:', { email, password, confirmPassword });
+    setIsLoading(true);
+    setError(null);
+    try {
+      await fetchClient.post<SignupRequest>('/api/auth/signup', { email, password, confirmPassword });
+      await loadCookieSession();
+      // Redirect to home on success
+      replaceState('/');
+    } catch (err) {
+      const error = err as Error & { data?: { message?: string } };
+      setError(error.data?.message || error.message || 'An error occurred during signup');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -25,10 +44,23 @@ const Signup = () => {
           gap: 3,
         }}
       >
+        <Box
+          component="img"
+          src={rnaLogo}
+          alt="Logo"
+          sx={{
+            maxWidth: '50%',
+            height: 'auto',
+          }}
+        />
         <Typography variant="h4" component="h1" gutterBottom>
           Signup
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}
+        >
           <TextField
             fullWidth
             label="Email"
@@ -53,15 +85,21 @@ const Signup = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          <Button type="submit" variant="contained" fullWidth size="large">
-            Submit
+          {error && (
+            <Typography color="error" variant="body2">
+              {error}
+            </Typography>
+          )}
+          <Button type="submit" variant="contained" fullWidth size="large" disabled={isLoading}>
+            {isLoading ? 'Signing up...' : 'Submit'}
           </Button>
-          <Box sx={{ textAlign: 'left' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Link href="/login" onClick={onLinkClick} underline="hover">
               Login
             </Link>
           </Box>
         </Box>
+        <Box sx={{ height: '200px' }} />
       </Box>
     </Container>
   );
