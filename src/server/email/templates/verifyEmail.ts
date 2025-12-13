@@ -7,6 +7,7 @@ type VerifyEmailProps = {
 };
 export default function verifyEmail({ email, token }: VerifyEmailProps) {
   const link = `${process.env.APP_ENDPOINT}/api/auth/verify-email?email=${email}&token=${token}`;
+  const subject = 'Verify your account';
   const mjmlText = `
     <mjml>
       <mj-head>
@@ -50,5 +51,5 @@ export default function verifyEmail({ email, token }: VerifyEmailProps) {
     </mjml>
   `;
   const { html } = mjml2html(mjmlText);
-  return { html };
+  return { subject, html };
 }

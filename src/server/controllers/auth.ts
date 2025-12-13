@@ -13,7 +13,9 @@ import {
   ResetPasswordRequest,
 } from 'shared/types/auth';
 
-import { verifyEmail, forgotPassword } from 'server/email/templates';
+import verifyEmail from 'server/email/templates/verifyEmail';
+import forgotPassword from 'server/email/templates/resetPassword';
+import { sendEmail } from 'server/email/mailer';
 
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
 type AuthControllerConfig = {
@@ -75,7 +77,8 @@ class AuthController {
       resetPasswordToken: null,
     };
     // send email with embedded verification token
-    verifyEmail({ email, token: emailVerifiedToken });
+    const { html, subject } = verifyEmail({ email, token: emailVerifiedToken });
+    await sendEmail({ to: email, subject, html });
 
     // Save new user
     await this.dynamoDocClient.put({
@@ -207,7 +210,9 @@ class AuthController {
           '#resetPasswordToken': 'resetPasswordToken',
         },
       });
-      forgotPassword({ email: email!, token: resetPasswordToken });
+      // send email with embedded verification token
+      const { html, subject } = forgotPassword({ email: email!, token: resetPasswordToken });
+      await sendEmail({ to: email!, subject, html });
     } catch (error) {
       // ignore errors, provide consistent response to prevent hackers from scanning for valid emails
     } finally {

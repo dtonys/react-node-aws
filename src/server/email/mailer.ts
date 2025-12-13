@@ -25,25 +25,12 @@ export async function sendEmail({
   text,
   html,
 }: SendEmailOptions): Promise<void> {
-  try {
-    console.log({
-      from,
-      to,
-      subject,
-      ...(text ? { text } : {}),
-      ...(html ? { html } : {}),
-    });
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject,
-      ...(html ? { html } : {}),
-      ...(text ? { text } : {}),
-    });
-
-    console.log('Email sent successfully:', info.messageId);
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+  const info = await transporter.sendMail({
+    from,
+    to,
+    subject,
+    ...(html ? { html } : {}),
+    ...(text ? { text } : {}),
+  });
+  console.log('Email sent successfully:', info.messageId);
 }

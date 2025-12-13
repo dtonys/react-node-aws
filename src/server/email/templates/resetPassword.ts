@@ -7,7 +7,8 @@ type ResetPasswordProps = {
 };
 export default function resetPassword({ email, token }: ResetPasswordProps) {
   const link = `${process.env.APP_ENDPOINT}/api/auth/reset-password?email=${email}&token=${token}`;
-  const text = `
+  const subject = 'Reset your password';
+  const mjmlText = `
     <mjml>
       <mj-head>
           <mj-title>Reset Password</mj-title>
@@ -46,5 +47,6 @@ export default function resetPassword({ email, token }: ResetPasswordProps) {
       </mj-body>
     </mjml>
   `;
-  return mjml2html(text);
+  const { html } = mjml2html(mjmlText);
+  return { subject, html };
 }
