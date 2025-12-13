@@ -126,8 +126,7 @@ class AuthController {
       secure: process.env.NODE_ENV === 'production',
       maxAge: _30_DAYS_SECONDS * 1000,
     });
-    res.json({});
-    // res.redirect('/');
+    res.redirect('/');
   };
 
   static login = async (req: Request, res: Response) => {

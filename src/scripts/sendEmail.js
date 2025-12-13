@@ -19,8 +19,8 @@ async function main() {
   // replServer.context.verifyEmail = verifyEmail;
   // replServer.context.resetPassword = resetPassword;
   // replServer.context.sendEmail = sendEmail;
-  const { html, subject } = await verifyEmail({ email: 'fitcal007@gmail.com', token: '1234567890' });
-  await sendEmail({ to: 'fitcal007@gmail.com', subject, html });
+  // const { html, subject } = await verifyEmail({ email: 'fitcal007@gmail.com', token: '1234567890' });
+  // await sendEmail({ to: 'fitcal007@gmail.com', subject, html });
   // const { html, subject } = resetPassword({ email: 'fitcal007@gmail.com', token: '1234567890' });
   // await sendEmail({ to: 'fitcal007@gmail.com', subject, html });
   console.log('Email sent successfully');

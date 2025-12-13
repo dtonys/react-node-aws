@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === 'development') {
 
 AuthController.init({ dynamoDocClient });
 apiRoutes.post('/auth/signup', AuthController.signup);
-apiRoutes.post('/auth/verify-email', AuthController.verifyEmail);
+apiRoutes.get('/auth/verify-email', AuthController.verifyEmail);
 apiRoutes.post('/auth/login', AuthController.login);
 apiRoutes.post('/auth/logout', AuthController.logout);
 apiRoutes.get('/auth/session', AuthController.sessionInfo);
