@@ -13,6 +13,8 @@ import {
   ResetPasswordRequest,
 } from 'shared/types/auth';
 
+import { verifyEmail, forgotPassword } from 'server/email/templates';
+
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
 type AuthControllerConfig = {
   dynamoDocClient: DynamoDBDocument;
@@ -73,6 +75,7 @@ class AuthController {
       resetPasswordToken: null,
     };
     // send email with embedded verification token
+    verifyEmail({ email, token: emailVerifiedToken });
 
     // Save new user
     await this.dynamoDocClient.put({
@@ -204,7 +207,7 @@ class AuthController {
           '#resetPasswordToken': 'resetPasswordToken',
         },
       });
-      // TODO: Send email with reset password token
+      forgotPassword({ email: email!, token: resetPasswordToken });
     } catch (error) {
       // ignore errors, provide consistent response to prevent hackers from scanning for valid emails
     } finally {
