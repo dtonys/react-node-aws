@@ -1,6 +1,7 @@
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import express, { Router, Request, Response } from 'express';
 import lodashOmit from 'lodash/omit';
+import lodashChunk from 'lodash/chunk';
 
 import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
 import {
@@ -47,14 +48,38 @@ class AuthController {
 
   static deleteSession = (sessionToken: string) => {
     const email = decrypt(sessionToken);
-    console.log('deleting session', {
-      email: email,
-      type: `SESSION#${sessionToken}`,
-    });
     void this.dynamoDocClient.delete({
       TableName: this.authTable,
       Key: { email: email, type: `SESSION#${sessionToken}` },
     });
+  };
+
+  static deleteAllSessions = async (email: string) => {
+    const response = await this.dynamoDocClient.query({
+      TableName: this.authTable,
+      KeyConditionExpression: '#email = :email AND begins_with(#type, :prefix)',
+      ExpressionAttributeValues: {
+        ':email': email,
+        ':prefix': 'SESSION#',
+      },
+      ExpressionAttributeNames: {
+        '#email': 'email',
+        '#type': 'type',
+      },
+    });
+    const sessions = response.Items as SessionRecord[];
+    const sessionChunks = lodashChunk(sessions, 25);
+    for (const sessionChunk of sessionChunks) {
+      await this.dynamoDocClient.batchWrite({
+        RequestItems: {
+          [this.authTable]: sessionChunk.map((session) => ({
+            DeleteRequest: {
+              Key: { email: email, type: session.type },
+            },
+          })),
+        },
+      });
+    }
   };
 
   static signup = async (req: Request, res: Response) => {
@@ -160,6 +185,25 @@ class AuthController {
     const cookieSessionToken = req.cookies[this.sessionCookieName];
     if (req.cookies[this.sessionCookieName]) {
       this.deleteSession(cookieSessionToken);
+      res.clearCookie(this.sessionCookieName, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: _30_DAYS_SECONDS * 1000,
+      });
+    }
+    res.json({});
+  };
+
+  static logoutAll = async (req: Request, res: Response) => {
+    const cookieSessionToken = req.cookies[this.sessionCookieName];
+    if (cookieSessionToken) {
+      const email = decrypt(cookieSessionToken);
+      await this.deleteAllSessions(email);
+      res.clearCookie(this.sessionCookieName, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: _30_DAYS_SECONDS * 1000,
+      });
     }
     res.json({});
   };
@@ -201,22 +245,44 @@ class AuthController {
       await this.dynamoDocClient.update({
         TableName: this.authTable,
         Key: { email, type: 'USER' },
+        ConditionExpression: 'attribute_exists(#email)',
         UpdateExpression: 'SET #resetPasswordToken = :resetPasswordToken',
         ExpressionAttributeValues: {
           ':resetPasswordToken': resetPasswordToken,
         },
         ExpressionAttributeNames: {
           '#resetPasswordToken': 'resetPasswordToken',
+          '#email': 'email',
         },
       });
       // send email with embedded verification token
       const { html, subject } = forgotPassword({ email: email!, token: resetPasswordToken });
       await sendEmail({ to: email!, subject, html });
     } catch (error) {
+      console.error(error);
       // ignore errors, provide consistent response to prevent hackers from scanning for valid emails
     } finally {
       res.json({});
     }
+  };
+
+  static resetPasswordEmailLink = async (req: Request, res: Response) => {
+    const { email, token } = req.query as Partial<ResetPasswordRequest>;
+    // TODO: Validate email and token and redirect to 404 page if invalid
+    if (!email || !token) {
+      return res.status(400).json({ message: 'Email and token are required' });
+    }
+    const response = await this.dynamoDocClient.get({
+      TableName: this.authTable,
+      Key: { email, type: 'USER' },
+    });
+    const user = response.Item as UserRecord | undefined;
+    const isValidToken = user?.resetPasswordToken === token;
+    if (!user || !isValidToken) {
+      res.redirect('/error');
+      return;
+    }
+    res.redirect(`/reset-password?email=${email}&token=${token}`);
   };
 
   static resetPassword = async (req: Request, res: Response) => {
@@ -232,7 +298,7 @@ class AuthController {
       TableName: this.authTable,
       Key: { email, type: 'USER' },
       // check token is valid
-      ConditionExpression: '#resetPasswordToken = :token',
+      ConditionExpression: 'attribute_exists(#email) AND #resetPasswordToken = :token',
       // set password hash and clear token
       UpdateExpression: 'SET #passwordHash = :passwordHash, #resetPasswordToken = :null',
       ExpressionAttributeValues: {
@@ -243,9 +309,20 @@ class AuthController {
       ExpressionAttributeNames: {
         '#passwordHash': 'passwordHash',
         '#resetPasswordToken': 'resetPasswordToken',
+        '#email': 'email',
       },
     });
-    res.json({});
+    // Log the user out and clear all active sessions
+    await this.deleteAllSessions(email);
+    const cookieSessionToken = req.cookies[this.sessionCookieName];
+    if (cookieSessionToken) {
+      res.clearCookie(this.sessionCookieName, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      });
+    }
+    // Redirect to login page
+    res.redirect('/login');
   };
 }
 

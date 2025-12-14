@@ -10,7 +10,9 @@ const apiRoutes: Router = express.Router();
 
 // Setup DynamoDB clients
 const dynamoDB = new DynamoDB({ region: 'us-west-1' });
-const dynamoDocClient = DynamoDBDocument.from(dynamoDB);
+const dynamoDocClient = DynamoDBDocument.from(dynamoDB, {
+  marshallOptions: { removeUndefinedValues: true },
+});
 if (process.env.NODE_ENV === 'development') {
   addDevLoggerMiddleware(dynamoDocClient);
 }
@@ -20,8 +22,10 @@ apiRoutes.post('/auth/signup', AuthController.signup);
 apiRoutes.get('/auth/verify-email', AuthController.verifyEmail);
 apiRoutes.post('/auth/login', AuthController.login);
 apiRoutes.post('/auth/logout', AuthController.logout);
+apiRoutes.post('/auth/logout/all', AuthController.logoutAll);
 apiRoutes.get('/auth/session', AuthController.sessionInfo);
 apiRoutes.post('/auth/forgot-password', AuthController.forgotPassword);
+apiRoutes.get('/auth/reset-password', AuthController.resetPasswordEmailLink);
 apiRoutes.post('/auth/reset-password', AuthController.resetPassword);
 
 // Root endpoint

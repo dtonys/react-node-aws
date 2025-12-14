@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, RefObject } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { replaceState } from 'client/helpers/routing';
 import theme from './theme';
 
 type PathToMeta = {
@@ -12,6 +13,10 @@ const pathToMeta: PathToMeta = {
   '/': { component: 'home', requireAuth: true },
   '/login': { component: 'login', requireAuth: false },
   '/signup': { component: 'signup', requireAuth: false },
+  '/forgot-password': { component: 'forgot-password', requireAuth: false },
+  '/reset-password': { component: 'reset-password', requireAuth: false },
+  '/not-found': { component: 'not-found', requireAuth: false },
+  '/error': { component: 'error', requireAuth: false },
   '/styleguide': { component: 'styleguide', requireAuth: false },
   '/profile': { component: 'profile', requireAuth: true },
 };
@@ -31,13 +36,16 @@ const App = () => {
   const currentUserRef = useRef<Record<string, any> | null>(null);
 
   const onLocationChange = async () => {
-    const { component, requireAuth } = pathToMeta[window.location.pathname] || {};
+    // Not found redirect
     let newPath = window.location.pathname;
+    if (!pathToMeta[newPath]) {
+      replaceState('/not-found');
+      return;
+    }
+    const { component, requireAuth } = pathToMeta[newPath] || {};
     // Login redirect
-    if (!component || (requireAuth && !currentUserRef.current)) {
-      newPath = '/login';
-      window.history.replaceState({}, '', '/login');
-      window.dispatchEvent(new PopStateEvent('popstate'));
+    if (requireAuth && !currentUserRef.current) {
+      replaceState('/login');
       return;
     }
     const pageComponent = (await import(`./pages/${component}/index.tsx`)) as DynamicImport;

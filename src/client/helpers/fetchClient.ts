@@ -1,3 +1,5 @@
+import { replaceState } from './routing';
+
 const defaultHeaders = {
   'Content-Type': 'application/json',
 };
@@ -30,6 +32,12 @@ const fetchClient = {
       body: body ? JSON.stringify(body) : undefined,
       credentials: 'include',
     });
+    // Check for redirect response
+    if (response.redirected) {
+      replaceState(new URL(response.url).pathname);
+      return {} as TResponse;
+    }
+
     const data: TResponse = await response.json();
     if (!response.ok) {
       const err = new Error(`HTTP error! status: ${response.status}`);

@@ -1,6 +1,7 @@
 import { Box, Container, Typography, Button } from '@mui/material';
 import { useState } from 'react';
 import rnaLogo from 'client/images/RNA-white-2.png';
+import { replaceState } from 'client/helpers/routing';
 
 type HomeProps = {
   currentUser: Record<string, any> | null;
@@ -17,7 +18,7 @@ const Home = ({ currentUser }: HomeProps) => {
         method: 'POST',
         credentials: 'include',
       });
-      window.location.href = '/login';
+      replaceState('/login');
     } catch (err) {
       console.error('Logout error:', err);
       setIsLoading(false);

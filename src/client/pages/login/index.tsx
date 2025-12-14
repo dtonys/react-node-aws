@@ -30,6 +30,15 @@ const Login = ({ loadCookieSession }: LoginProps) => {
     }
   };
 
+  const handleRedirectTest = async () => {
+    try {
+      await fetchClient.post('/api/auth/redirect-test');
+    } catch (err) {
+      const error = err as Error & { data?: { message?: string } };
+      setError(error.data?.message || error.message || 'An error occurred');
+    }
+  };
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -92,6 +101,9 @@ const Login = ({ loadCookieSession }: LoginProps) => {
             </Link>
           </Box>
         </Box>
+        <Button variant="outlined" onClick={handleRedirectTest}>
+          Test Redirect
+        </Button>
         <Box sx={{ height: '200px' }} />
       </Box>
     </Container>
