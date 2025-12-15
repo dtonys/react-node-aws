@@ -18,6 +18,7 @@ const ForgotPassword = () => {
     try {
       await fetchClient.post<ForgotPasswordRequest>('/api/auth/forgot-password', { email });
       setSuccess(true);
+      setIsLoading(false);
     } catch (err) {
       const error = err as Error & { data?: { message?: string } };
       setError(error.data?.message || error.message || 'An error occurred');

@@ -66,9 +66,10 @@ const App = () => {
   }
 
   useEffect(() => {
-    window.addEventListener('popstate', () => void onLocationChange());
+    const handlePopState = () => void onLocationChange();
+    window.addEventListener('popstate', handlePopState);
     void onInitialPageLoad();
-    return () => window.removeEventListener('popstate', () => void onLocationChange());
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   return (

@@ -202,7 +202,6 @@ class AuthController {
       res.clearCookie(this.sessionCookieName, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: _30_DAYS_SECONDS * 1000,
       });
     }
     res.json({});
@@ -241,6 +240,9 @@ class AuthController {
   static forgotPassword = async (req: Request, res: Response) => {
     try {
       const { email } = req.body as Partial<ForgotPasswordRequest>;
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
       const resetPasswordToken = encrypt(email!);
       await this.dynamoDocClient.update({
         TableName: this.authTable,
@@ -282,7 +284,7 @@ class AuthController {
       res.redirect('/error');
       return;
     }
-    res.redirect(`/reset-password?email=${email}&token=${token}`);
+    res.redirect(`/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
   };
 
   static resetPassword = async (req: Request, res: Response) => {

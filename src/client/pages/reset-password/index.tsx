@@ -28,15 +28,13 @@ const ResetPassword = () => {
     }
 
     try {
-      // API will redirect on success.
+      // API will respond with 302 redirect, so fetchClient will handle navigation.
       await fetchClient.post<ResetPasswordRequest>('/api/auth/reset-password', {
         email: email!,
         token: token!,
         password,
         confirmPassword,
       });
-      setSuccess(true);
-      setIsLoading(false);
     } catch (err) {
       const error = err as Error & { data?: { message?: string } };
       setError(error.data?.message || error.message || 'An error occurred');
