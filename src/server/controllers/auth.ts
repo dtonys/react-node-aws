@@ -29,6 +29,17 @@ class AuthController {
 
   static init({ dynamoDocClient }: AuthControllerConfig) {
     this.dynamoDocClient = dynamoDocClient;
+    const router = express.Router();
+    router.post('/auth/signup', this.signup);
+    router.get('/auth/verify-email', this.verifyEmailLink);
+    router.post('/auth/login', this.login);
+    router.post('/auth/logout', this.logout);
+    router.post('/auth/logout/all', this.logoutAll);
+    router.get('/auth/session', this.sessionInfo);
+    router.post('/auth/forgot-password', this.forgotPassword);
+    router.get('/auth/reset-password', this.resetPasswordEmailLink);
+    router.post('/auth/reset-password', this.resetPassword);
+    return router;
   }
 
   static createSession = async (email: string) => {
@@ -122,7 +133,7 @@ class AuthController {
     res.json({ sessionToken });
   };
 
-  static verifyEmail = async (req: Request, res: Response) => {
+  static verifyEmailLink = async (req: Request, res: Response) => {
     const { email, token } = req.query as Partial<VerifyEmailRequest>;
     if (!email || !token) {
       return res.status(400).json({ message: 'Email and token are required' });

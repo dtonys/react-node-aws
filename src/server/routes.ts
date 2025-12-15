@@ -17,16 +17,7 @@ if (process.env.NODE_ENV === 'development') {
   addDevLoggerMiddleware(dynamoDocClient);
 }
 
-AuthController.init({ dynamoDocClient });
-apiRoutes.post('/auth/signup', AuthController.signup);
-apiRoutes.get('/auth/verify-email', AuthController.verifyEmail);
-apiRoutes.post('/auth/login', AuthController.login);
-apiRoutes.post('/auth/logout', AuthController.logout);
-apiRoutes.post('/auth/logout/all', AuthController.logoutAll);
-apiRoutes.get('/auth/session', AuthController.sessionInfo);
-apiRoutes.post('/auth/forgot-password', AuthController.forgotPassword);
-apiRoutes.get('/auth/reset-password', AuthController.resetPasswordEmailLink);
-apiRoutes.post('/auth/reset-password', AuthController.resetPassword);
+apiRoutes.use(AuthController.init({ dynamoDocClient }));
 
 // Root endpoint
 apiRoutes.get('/', (_req: Request, res: Response) => {
