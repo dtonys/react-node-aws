@@ -2,7 +2,9 @@ import path from 'node:path';
 import express, { Application, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({
+  path: path.join(process.cwd(), '.env'),
+});
 
 import { loadSecrets } from 'server/helpers/secrets';
 import { setEncryptionKey } from 'server/helpers/session';
@@ -12,7 +14,7 @@ import apiRoutes from 'server/routes';
 console.log('NODE_ENV', process.env.NODE_ENV);
 const app: Application = express();
 
-const publicDir = path.join(__dirname, '../public');
+const publicDir = path.join(__dirname, '../../public');
 app.use(express.json());
 app.use(express.static(publicDir));
 app.use(cookieParser());
