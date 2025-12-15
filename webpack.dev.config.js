@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -74,10 +75,18 @@ module.exports = {
       template: './src/client/index.ejs',
       filename: 'index.html',
       templateParameters: {
-        title: 'Web 2026',
+        title: 'React Node AWS',
       },
     }),
     new ReactRefreshWebpackPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'src/client/images/favicons'),
+          to: path.resolve(__dirname, 'public'),
+        },
+      ],
+    }),
   ],
   devServer: {
     static: {

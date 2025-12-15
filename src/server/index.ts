@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.static(publicDir));
 app.use(cookieParser());
 app.use('/api', apiRoutes);
-app.get('/*all-routes', (_req: Request, res: Response) => {
+app.get('/*all', (_req: Request, res: Response) => {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 

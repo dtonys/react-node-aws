@@ -1,7 +1,7 @@
 {
-  "name": "web-2026",
+  "name": "react-node-aws",
   "version": "1.0.0",
-  "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
+  "description": "The ultimate boilerplate for modern fullstack development.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,10 @@
     "debug": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node --inspect=9229 -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
     "dev": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
     "webpack:watch": "webpack serve --env development",
-    "webpack:build": "webpack --env production"
+    "webpack:build": "webpack --env production",
+    "docker:build": "docker build -t web-2026:latest .",
+    "docker:run": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -p 3000:3000 web-2026:latest",
+    "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -it web-2026:latest sh"
   },
   "repository": {
     "type": "git",
@@ -67,6 +70,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.2",
     "eslint": "^9.39.1",

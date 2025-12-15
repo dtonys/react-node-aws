@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -76,7 +77,7 @@ module.exports = {
       template: './src/client/index.ejs',
       filename: 'index.html',
       templateParameters: {
-        title: 'Web 2026',
+        title: 'React Node AWS',
       },
       minify: {
         removeComments: true,
@@ -94,6 +95,14 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'css/[name].[contenthash].css',
       chunkFilename: 'css/[name].[contenthash].chunk.css',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'src/client/images/favicons'),
+          to: path.resolve(__dirname, 'public'),
+        },
+      ],
     }),
   ],
   optimization: {
