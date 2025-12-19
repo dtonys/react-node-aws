@@ -9,6 +9,7 @@ dotenv.config({
 import { loadSecrets } from 'server/helpers/secrets';
 import { setEncryptionKey } from 'server/helpers/session';
 import apiRoutes from 'server/routes';
+import { init as initMailer } from 'server/email/mailer';
 
 // Setup express app
 console.log('NODE_ENV', process.env.NODE_ENV);
@@ -25,8 +26,9 @@ app.get('/*all', (_req: Request, res: Response) => {
 
 // Start server
 async function bootstrap() {
-  const encryptionKey = await loadSecrets();
-  setEncryptionKey(encryptionKey);
+  const { SESSION_ENCRYPTION_KEY, RESEND_API_KEY } = await loadSecrets();
+  setEncryptionKey(SESSION_ENCRYPTION_KEY);
+  initMailer(RESEND_API_KEY);
   console.log('Server starting...');
   app.listen(3000, () => {
     console.log(`Server is running on port 3000 in ${process.env.NODE_ENV} mode`);

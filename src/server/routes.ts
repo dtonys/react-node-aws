@@ -9,7 +9,7 @@ import { addDevLoggerMiddleware } from './helpers/dynamo';
 const apiRoutes: Router = express.Router();
 
 // Setup DynamoDB clients
-const dynamoDB = new DynamoDB({ region: 'us-west-1' });
+const dynamoDB = new DynamoDB();
 const dynamoDocClient = DynamoDBDocument.from(dynamoDB, {
   marshallOptions: { removeUndefinedValues: true },
 });

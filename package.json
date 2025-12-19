@@ -12,6 +12,7 @@
     "webpack:watch": "webpack serve --env development",
     "webpack:build": "webpack --env production",
     "docker:build": "docker build -t web-2026:latest .",
+    "docker:build:linux": "docker build --platform linux/amd64 -t web-2026:latest .",
     "docker:run": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -p 3000:3000 web-2026:latest",
     "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -it web-2026:latest sh"
   },

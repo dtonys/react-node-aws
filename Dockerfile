@@ -17,7 +17,7 @@ RUN npm run build
 RUN npm run webpack:build
 
 # Remove devDependencies to keep the image slim
-# RUN npm prune --production
+RUN npm prune --production
 
 # Set ownership to non-root user
 RUN chown -R node:node /app
