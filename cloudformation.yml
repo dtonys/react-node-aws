@@ -144,14 +144,18 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-tg
 
-  # ACM Certificate
+  # ACM Certificate (wildcard + apex)
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub '*.${DomainName}'
       ValidationMethod: DNS
       DomainValidationOptions:
         - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+        - DomainName: !Sub '*.${DomainName}'
           HostedZoneId: !Ref HostedZoneId
       Tags:
         - Key: Name
@@ -171,7 +175,7 @@ Resources:
             Port: 443
             StatusCode: HTTP_301
 
-  # HTTPS Listener
+  # HTTPS Listener (default action forwards to target group)
   HTTPSListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -184,12 +188,45 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
 
-  # Route53 A Record
+  # Listener Rule: Redirect apex domain to www
+  ApexToWwwRedirectRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !Ref HTTPSListener
+      Priority: 1
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Ref DomainName
+      Actions:
+        - Type: redirect
+          RedirectConfig:
+            Host: !Sub 'www.${DomainName}'
+            Protocol: HTTPS
+            Port: '443'
+            Path: '/#{path}'
+            Query: '#{query}'
+            StatusCode: HTTP_301
+
+  # Route53 A Record for apex domain
   DNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref HostedZoneId
       Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+        EvaluateTargetHealth: true
+
+  # Route53 A Record for www subdomain
+  WWWDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub 'www.${DomainName}'
       Type: A
       AliasTarget:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName
@@ -280,9 +317,9 @@ Resources:
             - Name: NODE_ENV
               Value: production
             - Name: APP_ENDPOINT
-              Value: !Sub https://${DomainName}
+              Value: !Sub https://www.${DomainName}
             - Name: API_ENDPOINT
-              Value: !Sub https://${DomainName}
+              Value: !Sub https://www.${DomainName}
             - Name: AWS_REGION
               Value: !Ref AWS::Region
           LogConfiguration:
@@ -332,7 +369,7 @@ Outputs:
 
   DomainURL:
     Description: Application URL with domain
-    Value: !Sub https://${DomainName}
+    Value: !Sub https://www.${DomainName}
 
   ECSClusterName:
     Description: ECS Cluster name
