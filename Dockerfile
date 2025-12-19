@@ -9,18 +9,14 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy source
-COPY . .
+COPY --chown=node . .
 
 # Build Server
 RUN npm run build
-# Build Client
 RUN npm run webpack:build
-
-# Remove devDependencies to keep the image slim
-RUN npm prune --production
+# RUN npm prune --production
 
 # Set ownership to non-root user
-RUN chown -R node:node /app
 USER node
 
 # Expose port

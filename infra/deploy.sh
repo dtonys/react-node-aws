@@ -2,11 +2,15 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 # Configuration
 STACK_NAME="web-2026"
 REGION="us-west-1"
 ECR_REPO="964744224338.dkr.ecr.us-west-1.amazonaws.com/web-2026"
-TEMPLATE_FILE="cloudformation.yml"
+TEMPLATE_FILE="$SCRIPT_DIR/cloudformation.yml"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -18,7 +22,7 @@ echo -e "${BLUE}Starting deployment process...${NC}"
 
 # Step 1: Build Docker image
 echo -e "\n${BLUE}Step 1: Building Docker image...${NC}"
-npm run docker:build:linux
+cd "$PROJECT_ROOT" && npm run docker:build:linux
 
 # Step 2: Authenticate to ECR
 echo -e "\n${BLUE}Step 2: Authenticating to ECR...${NC}"
