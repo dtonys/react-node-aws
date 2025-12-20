@@ -18,33 +18,130 @@ Minimal dependencies, with usage of web standard apis.
 
 Featuring modern frontend, and connection to AWS cloud ecosystem, covering core components.
 
-# Quick Start
+# Setup
 
-### IAM Role
+### Pull code and install dependencies
 
-Make sure to have an AWS IAM role configured. Recommend "AdministratorAccess" to allow access to all resources, until further restrictions are required.
+```
+> git clone git@github.com:dtonys/react-node-aws.git
+> cd react-node-aws.git
+> nvm use 24
+> npm install
+```
 
-### Generate Encryption Secret
+### AWS authentication
 
-Use the AWS Secrets Manager to create a secret value called `web-secrets`.
+Create a user in IAM and give it `AdministratorAccess`, this user will be used to develop locally.
 
-It should include `SESSION_ENCRYPTION_KEY`={secret}.
+Create an access key, choose "Command Line Interface (CLI)", generate and save the "Access Key ID" and "Secret Access Key".
+
+Install AWS cli and configure to generate your credentials on your user directory `~/.aws`. Use the credentials above to authenticate.
+
+```
+> brew install awscli
+> aws configure
+```
+
+Add the IAM user to your envs, in your `.bashrc` or `.zshrc`
+
+> export AWS_PROFILE=\<your-user\>
+
+### Domain
+
+Purchase a domain and setup the DNS records in Route 53.
+
+### Email
+
+AWS SES will likely reject your request for production access, so use resend to handle email integration. https://resend.com/
+
+Once setup, add the email records to Route 53, pointing to your domain.
+
+### Secrets
+
+Setup a secret called `web-secrets` in AWS Secrets Manager:
+
+```
+SESSION_ENCRYPTION_KEY={secret}
+RESEND_API_KEY={secret}
+```
 
 Execute the following to generate a secret:
 
 > node src/scripts/generateSecret.js
 
-The web server will pull this secret from KMS on start. Secret is used to generate session and email tokens.
+Add your resend API key and the generated secret there.
 
-### Pull code and install dependencies
+# AWS Build and Deploy
 
-> git clone git@github.com:dtonys/react-node-aws.git
+AWS resources and deployment will be handled by CloudFormation. You'll need to do a few manual steps before deploying.
 
-> cd react-node-aws.git
+### Docker
 
-> nvm use 24
+Make sure you have docker desktop installed to be able to build docker image.
 
-> npm install
+Run the npm script to test your docker build
+
+> npm run docker:build
+
+### ECR
+
+Create a repo on ECR.
+
+### Cloudformation & Script variables
+
+We use some default resources that come with your account, along with some variables you need to configure such as your domain and ECR name.
+
+CloudFormation:
+
+- DomainName - Route53
+- HostedZoneId - Route53
+- VpcId - VPC
+- PublicSubnet1 - VPC
+- PublicSubnet2 - VPC
+- ECRImageUri - matches ECR created above^
+
+Script:
+
+- ECR_REPO=
+
+### Deploy
+
+First generate the certificate for your domain, this only needs to be done once, but can take a few minutes.
+
+> ./infra/create-cert.sh
+
+Then deploy the stack:
+
+> ./infra/deploy.sh
+
+This will create all the resources you need, including the DynamoDB which the web app relies on.
+
+On completion, your app should be deployed to production:
+https://www.react-node-aws.com/
+
+You can add more resources in your CloudFormation, and also update your local code.
+
+When you want to deploy, run the `./infra/deploy.sh`, it will take care of updating your resources and deploying your latest code.
+
+# Misc
+
+### Email Templating - MJML
+
+MJML engine makes designing emails simple. You can design email templates via their online tool: https://mjml.io/try-it-live
+
+This app ships with "Verify Email" and "Reset Password" which are vital for the authentication workflow.
+
+### Favicons
+
+Use https://favicon.io/favicon-converter/ to generate favicons across platforms.
+
+# Quickstart
+
+### Env variables
+
+Your local env variables will be stored in a .env and loaded on server start.
+
+The .env will not be used in production, make sure to add those variables to the `Environment` section in your `TaskDefinition`, inside the cloudformation.yml.
 
 ### Start Server in dev mode
 
@@ -68,32 +165,10 @@ Build server and client, run locally
 
 > npm run start
 
-Build Docker image, run on docker. Requires docker desktop.
+Build Docker image, run on docker.
 
 > npm run docker:build
 
 > npm run docker:run
 
-# Setup
-
-### Email Sending - Resend & SES
-
-AWS SES will likely reject your request for production access, so use resend to handle email integration. https://resend.com/
-
-Add RESEND_API_KEY to your .env once integrated.
-
-Use route53 to add email DNS hooked up to your domain. You can configure both resend and SES without conflict.
-
-After you have got resend integrated and your site deployed to production, you can provide AWS with the details to grant you production access on SES, and then migrate to SES.
-
-### Email Templating - MJML
-
-MJML engine makes designing emails simple. You can design email templates via their online tool: https://mjml.io/try-it-live
-
-This app ships with "Verify Email" and "Reset Password" which are vital for the authentication workflow.
-
-### Favicons
-
-Use https://favicon.io/favicon-converter/ to generate favicons across platforms.
-
-### Deploy Code (TODO)
+When building prod version, your app be will availble on localhost:3000
