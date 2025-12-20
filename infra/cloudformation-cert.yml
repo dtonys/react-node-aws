@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ACM Certificate for web-2026 application'
+
+##############################################
+# NOTE: Due to difficulties creating the certificate, it is extracted to a separate stack.
+# This should be run before deploying the main stack.
+##############################################
+Parameters:
+  DomainName:
+    Type: String
+    Default: react-node-aws.com
+    Description: Domain name for the application
+
+  HostedZoneId:
+    Type: String
+    Default: Z061643331OITX7Z4V6YL
+    Description: Existing Route53 Hosted Zone ID
+
+Resources:
+  # ACM Certificate (wildcard + apex)
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub '*.${DomainName}'
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-cert
+
+Outputs:
+  CertificateArn:
+    Description: ARN of the ACM certificate
+    Value: !Ref Certificate
+    Export:
+      Name: !Sub ${AWS::StackName}-CertificateArn
