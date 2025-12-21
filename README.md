@@ -85,7 +85,7 @@ Create a repo on ECR. The deploy scripts will connect to ECR, tag your local doc
 
 ### Update Cloudformation and Scripts
 
-Visit route53 and VPC via the AWS console to plug in the variables.  We will be using the default VPC and Route53 variables.
+Visit route53 and VPC via the AWS console to plug in the variables. We will be using the default VPC and Route53 variables.
 
 The snippet below shows the minimum configs you need to update.
 
@@ -113,7 +113,7 @@ Create ECS Stack, build & deploy latest docker image.
 
 > ./infra/deploy-server.sh
 
-Create Cloudfront assets stack, build assets and copy to S3.
+Build assets and copy to S3.
 
 > ./infra/deploy-client.sh
 
@@ -126,11 +126,15 @@ From here, run the client or server deploy script to deploy new code.
 
 If deploying both server and client, run the server deploy first and wait for it to finish before deploying client.
 
+### Deleting Cloudformation stacks
+
+You can delete a stack via the Cloudformation console. However, that will not remove all resources with delete protection enabled. So make sure to delete resources manually if you want a clean slate, or run into deletion failed errors.
+
 # Local Development
 
 ### Env variables
 
-Create and populate a `.env` file.  See `.env.sample` has been provided.
+Create and populate a `.env` file. See `.env.sample` has been provided.
 
 The .env will not be used in production, make sure to add new variables to the `Environment` section in your `TaskDefinition`, inside the cloudformation.yml.
 

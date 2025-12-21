@@ -117,7 +117,7 @@ Resources:
       Protocol: HTTP
       TargetType: ip
       HealthCheckEnabled: true
-      HealthCheckPath: /
+      HealthCheckPath: /api/health
       HealthCheckProtocol: HTTP
       HealthCheckIntervalSeconds: 30
       HealthCheckTimeoutSeconds: 5
