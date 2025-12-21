@@ -50,7 +50,7 @@ Purchase a domain and setup the DNS records in Route 53.
 
 ### Email
 
-Signup for resent to integrate your email - https://resend.com/
+Signup for resend to integrate your email - https://resend.com/
 
 Setup your domain name with resend, update your route 53 with email records.
 
