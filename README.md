@@ -16,7 +16,7 @@ Simple and clean foundation for production quality web applications.
 
 Minimal dependencies, with usage of web standard apis.
 
-Featuring modern frontend, and connection to AWS cloud ecosystem, covering core components.
+Featuring modern frontend, and connection to AWS cloud ecosystem, with IAC via Cloudformation.
 
 # Setup
 
