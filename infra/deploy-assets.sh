@@ -92,10 +92,12 @@ if aws cloudformation describe-stacks --stack-name $ASSETS_STACK_NAME --region $
             ParameterKey=CloudFrontCertificateArn,ParameterValue="$CERT_ARN" \
             ParameterKey=ALBDomainName,ParameterValue="$ALB_DNS" \
         2>/dev/null || {
-            if [ $? -eq 255 ]; then
+            EXIT_CODE=$?
+            if [ $EXIT_CODE -eq 254 ]; then
                 echo -e "${YELLOW}No updates to perform.${NC}"
                 exit 0
             fi
+            exit $EXIT_CODE
         }
 
     echo -e "${BLUE}Waiting for stack update to complete...${NC}"
