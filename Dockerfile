@@ -8,13 +8,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source
-COPY --chown=node . .
+# Copy source - only what's needed for server build
+COPY --chown=node src/server ./src/server
+COPY --chown=node src/shared ./src/shared
 
 # Build Server
 RUN npm run build
-RUN npm run webpack:build
-# RUN npm prune --production
 
 # Set ownership to non-root user
 USER node

@@ -9,7 +9,9 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # Configuration
 STACK_NAME="web-2026"
 CERT_STACK_NAME="web-2026-cert"
+CF_CERT_STACK_NAME="web-2026-cert-cloudfront"
 REGION="us-west-1"
+CF_CERT_REGION="us-east-1"
 ECR_REPO="964744224338.dkr.ecr.us-west-1.amazonaws.com/web-2026"
 TEMPLATE_FILE="$SCRIPT_DIR/cloudformation.yml"
 
@@ -34,7 +36,8 @@ open_url() {
     fi
 }
 
-# Get Certificate ARN from cert stack
+# Get ALB Certificate ARN from cert stack (us-west-1)
+echo -e "${BLUE}Retrieving ALB certificate ARN from us-west-1...${NC}"
 CERT_ARN=$(aws cloudformation describe-stacks \
     --stack-name $CERT_STACK_NAME \
     --region $REGION \
@@ -43,9 +46,25 @@ CERT_ARN=$(aws cloudformation describe-stacks \
 
 if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" == "None" ]; then
     echo -e "${RED}Error: Certificate stack '$CERT_STACK_NAME' not found or has no CertificateArn output.${NC}"
-    echo -e "${RED}Please deploy the certificate stack first: aws cloudformation create-stack --stack-name $CERT_STACK_NAME --template-body file://$SCRIPT_DIR/cloudformation-cert.yml --region $REGION${NC}"
+    echo -e "${RED}Please deploy the certificate stack first: ./create-cert.sh${NC}"
     exit 1
 fi
+echo -e "${GREEN}ALB Certificate ARN: $CERT_ARN${NC}"
+
+# Get CloudFront Certificate ARN from cert stack (us-east-1)
+echo -e "${BLUE}Retrieving CloudFront certificate ARN from us-east-1...${NC}"
+CF_CERT_ARN=$(aws cloudformation describe-stacks \
+    --stack-name $CF_CERT_STACK_NAME \
+    --region $CF_CERT_REGION \
+    --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
+    --output text)
+
+if [ -z "$CF_CERT_ARN" ] || [ "$CF_CERT_ARN" == "None" ]; then
+    echo -e "${RED}Error: CloudFront certificate stack '$CF_CERT_STACK_NAME' not found.${NC}"
+    echo -e "${RED}Please deploy the certificate first: ./create-cert.sh${NC}"
+    exit 1
+fi
+echo -e "${GREEN}CloudFront Certificate ARN: $CF_CERT_ARN${NC}"
 
 echo -e "${BLUE}Starting deployment process...${NC}"
 
@@ -77,6 +96,7 @@ if aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 
         --parameters \
             ParameterKey=ECRImageUri,ParameterValue=$IMAGE_TAG \
             ParameterKey=CertificateArn,ParameterValue=$CERT_ARN \
+            ParameterKey=CloudFrontCertificateArn,ParameterValue=$CF_CERT_ARN \
         --capabilities CAPABILITY_NAMED_IAM \
         --region $REGION
 
@@ -98,6 +118,7 @@ else
         --parameters \
             ParameterKey=ECRImageUri,ParameterValue=$IMAGE_TAG \
             ParameterKey=CertificateArn,ParameterValue=$CERT_ARN \
+            ParameterKey=CloudFrontCertificateArn,ParameterValue=$CF_CERT_ARN \
         --capabilities CAPABILITY_NAMED_IAM \
         --region $REGION
 
