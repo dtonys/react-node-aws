@@ -85,15 +85,27 @@ Create a repo on ECR. The deploy scripts will connect to ECR, tag your local doc
 
 ### Update Cloudformation and Scripts
 
-Plug your variables in at the top of the cloudformation and script files.
+Visit route53 and VPC via the AWS console to plug in the variables.  We will be using the default VPC and Route53 variables.
 
-Plugin in your default VPC, subnets, Route53, domain name, and ECR link.
+The snippet below shows the minimum configs you need to update.
+
+```
+// infra/deploy-server.sh
+ECR_REPO=<account>.dkr.ecr.us-west-1.amazonaws.com/<repo-name>
+
+// infra/cloudformation.yml, update the `DEFAULT` value for each,
+DomainName
+HostedZoneId
+VpcId
+PublicSubnet1
+PublicSubnet2
+```
 
 ### Build Cloudformation stacks and deploy code
 
 Run the scripts in order
 
-Create certs for ECS and Cloudfront assets
+Create certs for ECS and Cloudfront assets. This only needs to be done once.
 
 > ./infra/create-cert.sh
 
@@ -105,46 +117,22 @@ Create Cloudfront assets stack, build assets and copy to S3.
 
 > ./infra/deploy-client.sh
 
-```
-
-### Deploy
-
-First generate the certificate for your domain, this only needs to be done once, but can take a few minutes.
-
-> ./infra/create-cert.sh
-
-Then deploy the stack:
-
-> ./infra/deploy-server.sh
-
-This will create all the resources you need, including the DynamoDB which the web app relies on.
-
 On completion, your app should be deployed to production:
 https://www.react-node-aws.com/
 
-You can add more resources in your CloudFormation, and also update your local code.
+You can also run the app locally now that your dynamoDB has been created.
 
-When you want to deploy, run the `./infra/deploy-server.sh`, it will take care of updating your resources and deploying your latest code.
+From here, run the client or server deploy script to deploy new code.
 
-# Misc
+If deploying both server and client, run the server deploy first and wait for it to finish before deploying client.
 
-### Email Templating - MJML
-
-MJML engine makes designing emails simple. You can design email templates via their online tool: https://mjml.io/try-it-live
-
-This app ships with "Verify Email" and "Reset Password" which are vital for the authentication workflow.
-
-### Favicons
-
-Use https://favicon.io/favicon-converter/ to generate favicons across platforms.
-
-# Quickstart
+# Local Development
 
 ### Env variables
 
-Your local env variables will be stored in a .env and loaded on server start.
+Create and populate a `.env` file.  See `.env.sample` has been provided.
 
-The .env will not be used in production, make sure to add those variables to the `Environment` section in your `TaskDefinition`, inside the cloudformation.yml.
+The .env will not be used in production, make sure to add new variables to the `Environment` section in your `TaskDefinition`, inside the cloudformation.yml.
 
 ### Start Server in dev mode
 
@@ -175,4 +163,17 @@ Build Docker image, run on docker.
 > npm run docker:run
 
 When building prod version, your app be will availble on localhost:3000
-```
+
+# Misc
+
+### Email Templating - MJML
+
+MJML engine makes designing emails simple. You can design email templates via their online tool: https://mjml.io/try-it-live
+
+This app ships with "Verify Email" and "Reset Password" which are vital for the authentication workflow.
+
+### Favicons
+
+Use https://favicon.io/favicon-converter/ to generate favicons across platforms.
+
+Place your favicons in `src/client/images/favicons`. The webpack build will automatically copy them into the `/public` folder where they can be consumed by the browser.
