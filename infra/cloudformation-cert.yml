@@ -2,9 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'ACM Certificate for web-2026 application'
 
 ##############################################
-# NOTE: Due to difficulties creating the certificate, it is extracted to a separate stack.
-# This should be run before deploying the main stack.
+# This template creates an ACM certificate with DNS validation.
+# Run ./create-cert.sh to create certs in both regions:
+#   - us-west-1 for ALB
+#   - us-east-1 for CloudFront
 ##############################################
+
 Parameters:
   DomainName:
     Type: String
@@ -17,7 +20,6 @@ Parameters:
     Description: Existing Route53 Hosted Zone ID
 
 Resources:
-  # ACM Certificate (wildcard + apex)
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:

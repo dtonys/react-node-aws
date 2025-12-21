@@ -4,10 +4,6 @@ set -e
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Configuration
-STACK_NAME="web-2026-cert"
-REGION="us-west-1"
 TEMPLATE_FILE="$SCRIPT_DIR/cloudformation-cert.yml"
 
 # Colors for output
@@ -16,63 +12,76 @@ BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}Checking certificate stack status...${NC}"
+# Function to create or check a certificate stack
+create_cert() {
+    local STACK_NAME=$1
+    local REGION=$2
+    local LABEL=$3
 
-# Check if stack already exists
-if aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION &> /dev/null; then
-    STACK_STATUS=$(aws cloudformation describe-stacks \
+    echo ""
+    echo -e "${BLUE}${LABEL} Certificate (${REGION})${NC}"
+    echo -e "${BLUE}$(printf '=%.0s' {1..40})${NC}"
+
+    # Check if stack already exists
+    if aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION &> /dev/null; then
+        STACK_STATUS=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region $REGION \
+            --query 'Stacks[0].StackStatus' \
+            --output text)
+
+        echo -e "${YELLOW}Stack '$STACK_NAME' already exists (status: $STACK_STATUS).${NC}"
+
+        CERT_ARN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --region $REGION \
+            --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
+            --output text)
+
+        if [ -n "$CERT_ARN" ] && [ "$CERT_ARN" != "None" ]; then
+            echo -e "${GREEN}Certificate ARN: $CERT_ARN${NC}"
+        fi
+
+        return 0
+    fi
+
+    echo -e "${BLUE}Creating certificate stack...${NC}"
+
+    aws cloudformation create-stack \
         --stack-name $STACK_NAME \
-        --region $REGION \
-        --query 'Stacks[0].StackStatus' \
-        --output text)
+        --template-body file://$TEMPLATE_FILE \
+        --region $REGION
 
-    echo -e "${YELLOW}Certificate stack '$STACK_NAME' already exists (status: $STACK_STATUS).${NC}"
+    echo -e "${BLUE}Waiting for DNS validation (5-30 minutes)...${NC}"
 
-    # Show the certificate ARN
+    CONSOLE_URL="https://${REGION}.console.aws.amazon.com/cloudformation/home?region=${REGION}#/stacks/events?stackId=${STACK_NAME}"
+    echo -e "${BLUE}View progress: ${CONSOLE_URL}${NC}"
+
+    # Open URL in browser (cross-platform)
+    if command -v open &> /dev/null; then
+        open "$CONSOLE_URL"
+    elif command -v xdg-open &> /dev/null; then
+        xdg-open "$CONSOLE_URL"
+    fi
+
+    aws cloudformation wait stack-create-complete \
+        --stack-name $STACK_NAME \
+        --region $REGION
+
+    echo -e "${GREEN}Certificate created successfully!${NC}"
+
     CERT_ARN=$(aws cloudformation describe-stacks \
         --stack-name $STACK_NAME \
         --region $REGION \
         --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
         --output text)
 
-    if [ -n "$CERT_ARN" ] && [ "$CERT_ARN" != "None" ]; then
-        echo -e "${GREEN}Certificate ARN: $CERT_ARN${NC}"
-    fi
+    echo -e "${GREEN}Certificate ARN: $CERT_ARN${NC}"
+}
 
-    exit 0
-fi
+# Create both certificates
+create_cert "web-2026-cert" "us-west-1" "ALB"
+create_cert "web-2026-cert-cloudfront" "us-east-1" "CloudFront"
 
-echo -e "${BLUE}Creating certificate stack...${NC}"
-
-aws cloudformation create-stack \
-    --stack-name $STACK_NAME \
-    --template-body file://$TEMPLATE_FILE \
-    --region $REGION
-
-echo -e "${BLUE}Waiting for certificate validation to complete...${NC}"
-echo -e "${BLUE}This may take 5-30 minutes...${NC}"
-
-CONSOLE_URL="https://${REGION}.console.aws.amazon.com/cloudformation/home?region=${REGION}#/stacks/events?stackId=${STACK_NAME}"
-echo -e "${BLUE}View progress: ${CONSOLE_URL}${NC}"
-
-# Open URL in browser (cross-platform)
-if command -v open &> /dev/null; then
-    open "$CONSOLE_URL"
-elif command -v xdg-open &> /dev/null; then
-    xdg-open "$CONSOLE_URL"
-fi
-
-aws cloudformation wait stack-create-complete \
-    --stack-name $STACK_NAME \
-    --region $REGION
-
-echo -e "${GREEN}Certificate stack created successfully!${NC}"
-
-# Show the certificate ARN
-CERT_ARN=$(aws cloudformation describe-stacks \
-    --stack-name $STACK_NAME \
-    --region $REGION \
-    --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
-    --output text)
-
-echo -e "${GREEN}Certificate ARN: $CERT_ARN${NC}"
+echo ""
+echo -e "${GREEN}Done!${NC}"

@@ -45,12 +45,12 @@ echo -e "${BLUE}Step 2: Retrieving CloudFront certificate ARN from us-east-1...$
 CERT_ARN=$(aws cloudformation describe-stacks \
     --stack-name $CERT_STACK_NAME \
     --region $CERT_REGION \
-    --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontCertificateArn`].OutputValue' \
+    --query 'Stacks[0].Outputs[?OutputKey==`CertificateArn`].OutputValue' \
     --output text 2>/dev/null)
 
 if [ -z "$CERT_ARN" ] || [ "$CERT_ARN" == "None" ]; then
     echo -e "${RED}Error: CloudFront certificate not found.${NC}"
-    echo -e "${YELLOW}Please run ./create-cert-cloudfront.sh first.${NC}"
+    echo -e "${YELLOW}Please run ./create-cert.sh cloudfront first.${NC}"
     exit 1
 fi
 

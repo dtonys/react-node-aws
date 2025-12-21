@@ -33,16 +33,14 @@ Featuring modern frontend, and connection to AWS cloud ecosystem, covering core 
 
 Create a user in IAM and give it `AdministratorAccess`, this user will be used to develop locally.
 
-Create an access key, choose "Command Line Interface (CLI)", generate and save the "Access Key ID" and "Secret Access Key".
-
-Install AWS cli and configure to generate your credentials on your user directory `~/.aws`. Use the credentials above to authenticate.
+Create an access and secret key for the AWS CLI. Install the CLI and use the keys to authenticate.
 
 ```
 > brew install awscli
 > aws configure
 ```
 
-Add the IAM user to your envs, in your `.bashrc` or `.zshrc`
+Update your `.zshrc` or equivalent.
 
 > export AWS_PROFILE=\<your-user\>
 
@@ -52,24 +50,22 @@ Purchase a domain and setup the DNS records in Route 53.
 
 ### Email
 
-AWS SES will likely reject your request for production access, so use resend to handle email integration. https://resend.com/
+Signup for resent to integrate your email - https://resend.com/
 
-Once setup, add the email records to Route 53, pointing to your domain.
+Setup your domain name with resend, update your route 53 with email records.
 
 ### Secrets
 
-Setup a secret called `web-secrets` in AWS Secrets Manager:
+In AWS Secrets Manager, add a secret named `web-secrets` with your session and resend key.
 
 ```
 SESSION_ENCRYPTION_KEY={secret}
 RESEND_API_KEY={secret}
 ```
 
-Execute the following to generate a secret:
+Use the following script to generate SESSION_ENCRYPTION_KEY:
 
 > node src/scripts/generateSecret.js
-
-Add your resend API key and the generated secret there.
 
 # AWS Build and Deploy
 
@@ -85,24 +81,31 @@ Run the npm script to test your docker build
 
 ### ECR
 
-Create a repo on ECR.
+Create a repo on ECR. The deploy scripts will connect to ECR, tag your local docker image with the ECR repo and commit hash, and then push it up to the ECR.
 
-### Cloudformation & Script variables
+### Update Cloudformation and Scripts
 
-We use some default resources that come with your account, along with some variables you need to configure such as your domain and ECR name.
+Plug your variables in at the top of the cloudformation and script files.
 
-CloudFormation:
+Plugin in your default VPC, subnets, Route53, domain name, and ECR link.
 
-- DomainName - Route53
-- HostedZoneId - Route53
-- VpcId - VPC
-- PublicSubnet1 - VPC
-- PublicSubnet2 - VPC
-- ECRImageUri - matches ECR created above^
+### Build Cloudformation stacks and deploy code
 
-Script:
+Run the scripts in order
 
-- ECR_REPO=
+Create certs for ECS and Cloudfront assets
+
+> ./infra/create-cert.sh
+
+Create ECS Stack, build & deploy latest docker image.
+
+> ./infra/deploy.sh
+
+Create Cloudfront assets stack, build assets and copy to S3.
+
+> ./infra/deploy-assets.sh
+
+```
 
 ### Deploy
 
@@ -172,3 +175,4 @@ Build Docker image, run on docker.
 > npm run docker:run
 
 When building prod version, your app be will availble on localhost:3000
+```
