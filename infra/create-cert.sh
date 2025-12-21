@@ -80,8 +80,8 @@ create_cert() {
 }
 
 # Create both certificates
-create_cert "web-2026-cert" "us-west-1" "ALB"
-create_cert "web-2026-cert-cloudfront" "us-east-1" "CloudFront"
+create_cert "react-node-aws-cert" "us-west-1" "ALB"
+create_cert "react-node-aws-cert-cloudfront" "us-east-1" "CloudFront"
 
 echo ""
 echo -e "${GREEN}Done!${NC}"

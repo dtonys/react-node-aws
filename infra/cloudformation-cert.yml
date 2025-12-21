@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ACM Certificate for web-2026 application'
+Description: 'ACM Certificate for react-node-aws application'
 
 ##############################################
 # This template creates an ACM certificate with DNS validation.

@@ -7,12 +7,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
-STACK_NAME="web-2026"
-CERT_STACK_NAME="web-2026-cert"
-CF_CERT_STACK_NAME="web-2026-cert-cloudfront"
+STACK_NAME="react-node-aws"
+CERT_STACK_NAME="react-node-aws-cert"
+CF_CERT_STACK_NAME="react-node-aws-cert-cloudfront"
 REGION="us-west-1"
 CF_CERT_REGION="us-east-1"
-ECR_REPO="964744224338.dkr.ecr.us-west-1.amazonaws.com/web-2026"
+ECR_REPO="964744224338.dkr.ecr.us-west-1.amazonaws.com/react-node-aws"
 TEMPLATE_FILE="$SCRIPT_DIR/cloudformation.yml"
 
 # Get Git SHA for image tagging
@@ -78,7 +78,7 @@ aws ecr get-login-password --region $REGION | docker login --username AWS --pass
 
 # Step 3: Tag image with Git SHA
 echo -e "\n${BLUE}Step 3: Tagging image with Git SHA: ${GIT_SHA}...${NC}"
-docker tag web-2026:latest $IMAGE_TAG
+docker tag react-node-aws:latest $IMAGE_TAG
 
 # Step 4: Push to ECR
 echo -e "\n${BLUE}Step 4: Pushing image to ECR...${NC}"

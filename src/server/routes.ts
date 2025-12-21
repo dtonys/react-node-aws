@@ -21,7 +21,7 @@ apiRoutes.use(AuthController.init({ dynamoDocClient }));
 
 // Root endpoint
 apiRoutes.get('/', (_req: Request, res: Response) => {
-  res.json({ message: 'web-2026' });
+  res.json({ message: 'react-node-aws' });
 });
 
 apiRoutes.get('/health', (_req: Request, res: Response) => {

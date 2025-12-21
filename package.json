@@ -11,14 +11,14 @@
     "dev": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
     "webpack:watch": "webpack serve --env development",
     "webpack:build": "webpack --env production",
-    "docker:build": "docker build -t web-2026:latest .",
-    "docker:build:linux": "docker build --platform linux/amd64 -t web-2026:latest .",
-    "docker:run": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -p 3000:3000 web-2026:latest",
-    "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -it web-2026:latest sh"
+    "docker:build": "docker build -t react-node-aws:latest .",
+    "docker:build:linux": "docker build --platform linux/amd64 -t react-node-aws:latest .",
+    "docker:run": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -p 3000:3000 react-node-aws:latest",
+    "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -it react-node-aws:latest sh"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@gitlab.com/dtonys-group/web-2026.git"
+    "url": "git+ssh://git@gitlab.com/dtonys-group/react-node-aws.git"
   },
   "keywords": [],
   "author": "",
@@ -28,9 +28,9 @@
     "node": "24.11.1"
   },
   "bugs": {
-    "url": "https://gitlab.com/dtonys-group/web-2026/issues"
+    "url": "https://gitlab.com/dtonys-group/react-node-aws/issues"
   },
-  "homepage": "https://gitlab.com/dtonys-group/web-2026#readme",
+  "homepage": "https://gitlab.com/dtonys-group/react-node-aws#readme",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.940.0",
     "@aws-sdk/client-secrets-manager": "^3.940.0",

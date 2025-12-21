@@ -99,11 +99,11 @@ Create certs for ECS and Cloudfront assets
 
 Create ECS Stack, build & deploy latest docker image.
 
-> ./infra/deploy.sh
+> ./infra/deploy-server.sh
 
 Create Cloudfront assets stack, build assets and copy to S3.
 
-> ./infra/deploy-assets.sh
+> ./infra/deploy-client.sh
 
 ```
 
@@ -115,7 +115,7 @@ First generate the certificate for your domain, this only needs to be done once,
 
 Then deploy the stack:
 
-> ./infra/deploy.sh
+> ./infra/deploy-server.sh
 
 This will create all the resources you need, including the DynamoDB which the web app relies on.
 
@@ -124,7 +124,7 @@ https://www.react-node-aws.com/
 
 You can add more resources in your CloudFormation, and also update your local code.
 
-When you want to deploy, run the `./infra/deploy.sh`, it will take care of updating your resources and deploying your latest code.
+When you want to deploy, run the `./infra/deploy-server.sh`, it will take care of updating your resources and deploying your latest code.
 
 # Misc
 

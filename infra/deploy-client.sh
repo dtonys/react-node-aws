@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Configuration
-STACK_NAME="web-2026"
+STACK_NAME="react-node-aws"
 REGION="us-west-1"
 
 # Colors for output
@@ -44,7 +44,7 @@ BUCKET_NAME=$(aws cloudformation describe-stacks \
 
 if [ -z "$BUCKET_NAME" ] || [ "$BUCKET_NAME" == "None" ]; then
     echo -e "${RED}Error: S3 bucket not found in stack outputs.${NC}"
-    echo -e "${RED}Please deploy the main stack first: ./deploy.sh${NC}"
+    echo -e "${RED}Please deploy the main stack first: ./deploy-server.sh${NC}"
     exit 1
 fi
 

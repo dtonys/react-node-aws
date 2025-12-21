@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ECS Fargate deployment with CloudFront and S3 for web-2026 application'
+Description: 'ECS Fargate deployment with CloudFront and S3 for react-node-aws application'
 
 Parameters:
   DomainName:
@@ -29,7 +29,7 @@ Parameters:
 
   ECRImageUri:
     Type: String
-    Description: ECR image URI with git SHA (e.g. 964744224338.dkr.ecr.us-west-1.amazonaws.com/web-2026:abc123)
+    Description: ECR image URI with git SHA (e.g. 964744224338.dkr.ecr.us-west-1.amazonaws.com/react-node-aws:abc123)
 
   DesiredCount:
     Type: Number
