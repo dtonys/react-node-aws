@@ -52,7 +52,7 @@ const Login = ({ loadCookieSession }: LoginProps) => {
           }}
         />
         <Typography variant="h4" component="h1" gutterBottom>
-          Login
+          Sign in
         </Typography>
         <Box
           component="form"
