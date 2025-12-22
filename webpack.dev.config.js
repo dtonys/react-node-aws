@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -89,6 +90,14 @@ module.exports = {
     }),
   ],
   devServer: {
+    // server: {
+    //   type: 'https',
+    //   options: {
+    //     key: fs.readFileSync('dev.react-node-aws.com+2-key.pem'),
+    //     cert: fs.readFileSync('dev.react-node-aws.com+2.pem'),
+    //   },
+    // },
+    allowedHosts: 'all',
     static: {
       directory: path.join(__dirname, 'public'),
     },

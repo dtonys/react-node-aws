@@ -13,7 +13,7 @@ COPY --chown=node src/server ./src/server
 COPY --chown=node src/shared ./src/shared
 
 # Build Server
-RUN npm run build
+RUN npm run server:build
 
 # Set ownership to non-root user
 USER node
@@ -22,4 +22,4 @@ USER node
 EXPOSE 3000
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "server:start"]

@@ -513,6 +513,16 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
+        - PolicyName: S3AssetsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - !GetAtt AssetsBucket.Arn
+                  - !Sub ${AssetsBucket.Arn}/*
 
   # ECS Task Definition
   TaskDefinition:
@@ -542,6 +552,8 @@ Resources:
               Value: !Sub https://www.${DomainName}
             - Name: AWS_REGION
               Value: !Ref AWS::Region
+            - Name: S3_ASSETS_BUCKET
+              Value: !Ref AssetsBucket
           LogConfiguration:
             LogDriver: awslogs
             Options:

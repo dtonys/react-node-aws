@@ -18,6 +18,18 @@ Minimal dependencies, with usage of web standard apis.
 
 Featuring modern frontend, and connection to AWS cloud ecosystem, with IAC via Cloudformation.
 
+# Quickstart
+
+- Create an AWS account and go through [#AWS authentication](#secrets)
+- Generate your [#secrets](#secrets), you can skip email.
+- Create a DynamoDB called `email-type`, with PK=email (string), SK=type (string)
+- Create a S3 called `react-node-aws-assets`
+- Copy `.env.sample` into a newly created `.env`
+- [#Pull code and install dependencies](#pull-code-and-install-dependencies)
+- [#Start Server in dev mode](#start-server-in-dev-mode)
+
+When transitioning from local development to production deployment, make sure to delete your S3 and DynamoDB to give Cloudformation a clean slate.
+
 # Setup
 
 ### Pull code and install dependencies
@@ -85,20 +97,22 @@ Create a repo on ECR. The deploy scripts will connect to ECR, tag your local doc
 
 ### Update Cloudformation and Scripts
 
-Visit route53 and VPC via the AWS console to plug in the variables. We will be using the default VPC and Route53 variables.
+Visit route53 and VPC via the AWS console to plug in the variables. We will be using the default VPC and Route53 variables that are already there in your account.
 
-The snippet below shows the minimum configs you need to update.
+You can keep the stack name, certs, and other params defaulted as `react-node-aws`.
+
+The snippet below shows the minimum configs you need to update. Replace the hardcoded values with the ones connected to your AWS account.
 
 ```
 // infra/deploy-server.sh
-ECR_REPO=<account>.dkr.ecr.us-west-1.amazonaws.com/<repo-name>
+ECR_REPO=964744224338.dkr.ecr.us-west-1.amazonaws.com/react-node-aws
 
 // infra/cloudformation.yml, update the `DEFAULT` value for each,
-DomainName
-HostedZoneId
-VpcId
-PublicSubnet1
-PublicSubnet2
+DomainName=react-node-aws.com
+HostedZoneId=Z061643331OITX7Z4V6YL
+VpcId=vpc-06340a61
+PublicSubnet1=subnet-f36b6ea8
+PublicSubnet2=subnet-4cef062a
 ```
 
 ### Build Cloudformation stacks and deploy code
@@ -111,24 +125,24 @@ Create certs for ECS and Cloudfront assets. This only needs to be done once.
 
 Create ECS Stack, build & deploy latest docker image.
 
-> ./infra/deploy-server.sh
+> npm run deploy:server
 
 Build assets and copy to S3.
 
-> ./infra/deploy-client.sh
+> npm run deploy:client
 
 On completion, your app should be deployed to production:
 https://www.react-node-aws.com/
 
 You can also run the app locally now that your dynamoDB has been created.
 
-From here, run the client or server deploy script to deploy new code.
+To deploy to both the server and client:
 
-If deploying both server and client, run the server deploy first and wait for it to finish before deploying client.
+> npm run deploy
 
 ### Deleting Cloudformation stacks
 
-You can delete a stack via the Cloudformation console. However, that will not remove all resources with delete protection enabled. So make sure to delete resources manually if you want a clean slate, or run into deletion failed errors.
+You can delete a stack via the Cloudformation console. However, that will not remove all resources with delete protection enabled. So make sure to delete resources manually, otherwise Cloudformation will run into "resource already exists" errors when creating the stack again.
 
 # Local Development
 
@@ -142,23 +156,23 @@ The .env will not be used in production, make sure to add new variables to the `
 
 Start API and frontend server in separate terminal tabs.
 
-> npm run dev
+> npm run server:watch
 
 > npm run webpack:watch
 
-Hit APIs on localhost:3000 on the web browser or postman client to test the APIs.
-
 Nativate to localhost:8080 on the web browser to see the frontend webapp.
 
-### Build and Start Server in prod
+Hit APIs on localhost:3000 on the web browser or postman client to test the APIs.
+
+### Build and Start Server in production mode
 
 Build server and client, run locally
 
-> npm run build
+> npm run server:build
 
 > npm run webpack:build
 
-> npm run start
+> npm run server:start
 
 Build Docker image, run on docker.
 
@@ -167,6 +181,16 @@ Build Docker image, run on docker.
 > npm run docker:run
 
 When building prod version, your app be will availble on localhost:3000
+
+### local subdomain
+
+In order to support domain based cookies, you will want to update your /etc/hosts to point localhost to your domain.
+
+```
+# /etc/hosts
+
+127.0.0.1       dev.react-node-aws.com
+```
 
 # Misc
 

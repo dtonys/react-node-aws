@@ -5,16 +5,19 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --project src/server/tsconfig.json && tsc-alias -p src/server/tsconfig.json",
-    "start": "node dist/server/index.js",
-    "debug": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node --inspect=9229 -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
-    "dev": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
+    "server:build": "tsc --project src/server/tsconfig.json && tsc-alias -p src/server/tsconfig.json",
+    "server:start": "NODE_ENV=production node dist/server/index.js",
+    "server:debug": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node --inspect=9229 -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
+    "server:watch": "TS_NODE_PROJECT=src/server/tsconfig.json nodemon --exec 'node -r ts-node/register/transpile-only -r tsconfig-paths/register' src/server/index.ts",
     "webpack:watch": "webpack serve --env development",
     "webpack:build": "webpack --env production",
     "docker:build": "docker build -t react-node-aws:latest .",
     "docker:build:linux": "docker build --platform linux/amd64 -t react-node-aws:latest .",
     "docker:run": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -p 3000:3000 react-node-aws:latest",
-    "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -it react-node-aws:latest sh"
+    "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -it react-node-aws:latest sh",
+    "deploy": "npm run deploy:server && npm run deploy:client",
+    "deploy:server": "./infra/deploy-server.sh",
+    "deploy:client": "./infra/deploy-client.sh"
   },
   "repository": {
     "type": "git",
