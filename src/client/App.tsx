@@ -64,6 +64,7 @@ const App = () => {
     console.log('sessionResponse', sessionResponse);
     const { user, session } = await sessionResponse.json();
     if (user && session) currentUserRef.current = user;
+    else currentUserRef.current = null;
   }
 
   async function onInitialPageLoad() {

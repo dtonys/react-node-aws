@@ -24,9 +24,10 @@ type UploadFile = {
 
 type UploadsProps = {
   currentUser: Record<string, any> | null;
+  loadCookieSession: () => Promise<void>;
 };
 
-const Uploads = ({ currentUser }: UploadsProps) => {
+const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
   const userEmail = currentUser?.email || '';
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isLoadingFiles, setIsLoadingFiles] = useState(true);
@@ -72,7 +73,7 @@ const Uploads = ({ currentUser }: UploadsProps) => {
 
   return (
     <Box>
-      <Nav userEmail={userEmail} />
+      <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
       <Container maxWidth="md">
         <Box sx={{ py: 3 }}>
           <Box

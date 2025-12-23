@@ -3,14 +3,15 @@ import Nav from 'client/components/Nav';
 
 type HomeProps = {
   currentUser: Record<string, any> | null;
+  loadCookieSession: () => Promise<void>;
 };
 
-const Home = ({ currentUser }: HomeProps) => {
+const Home = ({ currentUser, loadCookieSession }: HomeProps) => {
   const userEmail = currentUser?.email || '';
 
   return (
     <Box>
-      <Nav userEmail={userEmail} />
+      <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
       <Container maxWidth="sm">
         <Box
           sx={{

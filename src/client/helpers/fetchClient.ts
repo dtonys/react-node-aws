@@ -5,7 +5,10 @@ const defaultHeaders = {
 };
 
 const fetchClient = {
-  get: async <TResponse = unknown>(url: string, headers?: Record<string, string>): Promise<TResponse> => {
+  get: async <TResponse = unknown>(
+    url: string,
+    headers?: Record<string, string>,
+  ): Promise<TResponse> => {
     const response = await fetch(url, {
       method: 'GET',
       headers: { ...defaultHeaders, ...headers },
@@ -41,11 +44,14 @@ const fetchClient = {
 
     const data: TResponse = await response.json();
     if (!response.ok) {
+      console.log('response not ok');
       const err = new Error(`HTTP error! status: ${response.status}`);
       (err as any).status = response.status;
       (err as any).data = data;
+      console.log('response error');
       throw err;
     }
+    console.log('response return data: ', data);
     return data;
   },
 

@@ -2,26 +2,21 @@ import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material';
 import { useState } from 'react';
 import { replaceState } from 'client/helpers/routing';
 import rnaLogo from 'client/images/RNA-white-2.png';
+import fetchClient from 'client/helpers/fetchClient';
 
 type NavProps = {
   userEmail: string;
+  loadCookieSession: () => Promise<void>;
 };
 
-const Nav = ({ userEmail }: NavProps) => {
+const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     setIsLoading(true);
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      replaceState('/login');
-    } catch (err) {
-      console.error('Logout error:', err);
-      setIsLoading(false);
-    }
+    await fetchClient.post('/api/auth/logout');
+    await loadCookieSession();
+    replaceState('/login');
   };
 
   return (
