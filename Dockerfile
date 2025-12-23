@@ -9,14 +9,11 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy source - only what's needed for server build
-COPY --chown=node src/server ./src/server
-COPY --chown=node src/shared ./src/shared
+COPY --chown=node src ./src
 
 # Build Server
 RUN npm run server:build
-
-# Set ownership to non-root user
-USER node
+RUN npm run webpack:build
 
 # Expose port
 EXPOSE 3000
