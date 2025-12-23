@@ -11,14 +11,15 @@ type PathToMeta = {
 
 const pathToMeta: PathToMeta = {
   '/': { component: 'home', requireAuth: true },
-  '/login': { component: 'login', requireAuth: false },
-  '/signup': { component: 'signup', requireAuth: false },
+  '/login': { component: 'login', requireAuth: false, loggedInRedirect: '/' },
+  '/signup': { component: 'signup', requireAuth: false, loggedInRedirect: '/' },
   '/forgot-password': { component: 'forgot-password', requireAuth: false },
   '/reset-password': { component: 'reset-password', requireAuth: false },
   '/not-found': { component: 'not-found', requireAuth: false },
   '/error': { component: 'error', requireAuth: false },
   '/styleguide': { component: 'styleguide', requireAuth: false },
   '/profile': { component: 'profile', requireAuth: true },
+  '/uploads': { component: 'uploads', requireAuth: true },
 };
 
 type PageComponentProps = {
@@ -32,7 +33,8 @@ type DynamicImport = {
 
 const App = () => {
   const [currentPath, setCurrentPath] = useState<string>(window.location.pathname);
-  const [PageComponent, setPageComponent] = useState<React.ComponentType<PageComponentProps> | null>(null);
+  const [PageComponent, setPageComponent] =
+    useState<React.ComponentType<PageComponentProps> | null>(null);
   const currentUserRef = useRef<Record<string, any> | null>(null);
 
   const onLocationChange = async () => {
@@ -42,10 +44,14 @@ const App = () => {
       replaceState('/not-found');
       return;
     }
-    const { component, requireAuth } = pathToMeta[newPath] || {};
+    const { component, requireAuth, loggedInRedirect } = pathToMeta[newPath] || {};
     // Login redirect
     if (requireAuth && !currentUserRef.current) {
       replaceState('/login');
+      return;
+    }
+    if (loggedInRedirect && currentUserRef.current) {
+      replaceState(loggedInRedirect);
       return;
     }
     const pageComponent = (await import(`./pages/${component}/index.tsx`)) as DynamicImport;
@@ -76,7 +82,9 @@ const App = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {PageComponent && <PageComponent currentUserRef={currentUserRef} loadCookieSession={loadCookieSession} />}
+        {PageComponent && (
+          <PageComponent currentUserRef={currentUserRef} loadCookieSession={loadCookieSession} />
+        )}
       </ThemeProvider>
     </LocalizationProvider>
   );

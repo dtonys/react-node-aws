@@ -26,10 +26,11 @@ const fetchClient = {
     body?: TRequest,
     headers?: Record<string, string>,
   ): Promise<TResponse> => {
+    const isFormData = body instanceof FormData;
     const response = await fetch(url, {
       method: 'POST',
-      headers: { ...defaultHeaders, ...headers },
-      body: body ? JSON.stringify(body) : undefined,
+      headers: isFormData ? { ...headers } : { ...defaultHeaders, ...headers },
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
       credentials: 'include',
     });
     // Check for redirect response

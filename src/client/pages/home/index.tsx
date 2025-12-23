@@ -1,7 +1,5 @@
-import { Box, Container, Typography, Button } from '@mui/material';
-import { useState } from 'react';
-import rnaLogo from 'client/images/RNA-white-2.png';
-import { replaceState } from 'client/helpers/routing';
+import { Box, Container, Typography } from '@mui/material';
+import Nav from 'client/components/Nav';
 
 type HomeProps = {
   currentUser: Record<string, any> | null;
@@ -9,54 +7,27 @@ type HomeProps = {
 
 const Home = ({ currentUser }: HomeProps) => {
   const userEmail = currentUser?.email || '';
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      replaceState('/login');
-    } catch (err) {
-      console.error('Logout error:', err);
-      setIsLoading(false);
-    }
-  };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: 3,
-        }}
-      >
+    <Box>
+      <Nav userEmail={userEmail} />
+      <Container maxWidth="sm">
         <Box
-          component="img"
-          src={rnaLogo}
-          alt="Logo"
           sx={{
-            maxWidth: '50%',
-            height: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 'calc(100vh - 64px)',
+            gap: 3,
           }}
-        />
-        <Typography variant="h4" component="h1" gutterBottom>
-          Welcome
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {userEmail}
-        </Typography>
-        <Button variant="outlined" onClick={handleLogout} disabled={isLoading} sx={{ mt: 2 }}>
-          {isLoading ? 'Logging out...' : 'Logout'}
-        </Button>
-      </Box>
-    </Container>
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            Welcome
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

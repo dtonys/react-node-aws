@@ -4,6 +4,7 @@ import {
   S3Client,
   CompleteMultipartUploadCommandOutput,
   ListObjectsV2Command,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import formidable, { File } from 'formidable';
@@ -29,6 +30,7 @@ class UploadsController {
     router.use(AuthController.authMiddleware);
     router.get('/uploads', this.listFiles);
     router.post('/uploads/users', this.uploadFile);
+    router.delete('/uploads/users/:imageKey', this.deleteFile);
     return router;
   }
 
@@ -83,6 +85,20 @@ class UploadsController {
       }));
 
     res.json({ files });
+  };
+
+  static deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+    const { user } = res.locals;
+    const { imageKey } = req.params;
+    const key = `uploads/users/${user.email}/${imageKey}`;
+
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: key,
+    });
+
+    await this.s3Client.send(command);
+    res.json({ success: true, key });
   };
 
   static uploadFile = async (req: Request, res: Response, next: NextFunction) => {
