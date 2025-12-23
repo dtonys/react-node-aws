@@ -8,12 +8,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy source - only what's needed for server build
-COPY --chown=node src ./src
+# Copy source
+COPY --chown=node . .
 
 # Build Server
 RUN npm run server:build
 RUN npm run webpack:build
+RUN npm prune --production
+
+# Switch to non-root user for security
+RUN chown -R node:node /app
+USER node
 
 # Expose port
 EXPOSE 3000
