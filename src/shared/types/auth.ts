@@ -43,6 +43,11 @@ export type UserRecord = {
   resetPasswordToken: string | null;
 };
 
+export type SafeUserRecord = Omit<
+  UserRecord,
+  'passwordHash' | 'emailVerifiedToken' | 'resetPasswordToken'
+>;
+
 export type SessionRecord = {
   email: string;
   type: string; // Stored as 'SESSION#${token}'

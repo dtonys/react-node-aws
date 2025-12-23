@@ -1,5 +1,5 @@
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import lodashOmit from 'lodash/omit';
 import lodashChunk from 'lodash/chunk';
 
@@ -8,6 +8,7 @@ import {
   SignupRequest,
   LoginRequest,
   UserRecord,
+  SafeUserRecord,
   SessionRecord,
   ForgotPasswordRequest,
   VerifyEmailRequest,
@@ -218,31 +219,38 @@ class AuthController {
     res.json({});
   };
 
+  static getSessionAndUser = async (sessionToken: string) => {
+    const email = decrypt(sessionToken);
+    const getUser = this.dynamoDocClient.get({
+      TableName: this.authTable,
+      Key: { email, type: 'USER' },
+    });
+    const getSession = this.dynamoDocClient.get({
+      TableName: this.authTable,
+      Key: { email, type: `SESSION#${sessionToken}` },
+    });
+    const user = (await getUser).Item as UserRecord;
+    const session = (await getSession).Item as SessionRecord;
+    if (!user || !session) {
+      return { user: null, session: null };
+    }
+    const safeUser: SafeUserRecord = lodashOmit(
+      user,
+      'passwordHash',
+      'emailVerifiedToken',
+      'resetPasswordToken',
+    );
+    return { user: safeUser, session };
+  };
+
   static sessionInfo = async (req: Request, res: Response) => {
     const cookieSessionToken = req.cookies[this.sessionCookieName];
     if (!cookieSessionToken) {
       return res.json({ user: null, session: null });
     }
     try {
-      const email = decrypt(cookieSessionToken);
-      const getUser = this.dynamoDocClient.get({
-        TableName: this.authTable,
-        Key: { email, type: 'USER' },
-      });
-      const getSession = this.dynamoDocClient.get({
-        TableName: this.authTable,
-        Key: { email, type: `SESSION#${cookieSessionToken}` },
-      });
-      const [{ Item: user }, { Item: session }] = await Promise.all([getUser, getSession]);
-      if (!user || !session) {
-        return res.json({ user: null, session: null });
-      }
-      const userRecord = user as UserRecord;
-      const sessionRecord = session as SessionRecord;
-      return res.json({
-        user: lodashOmit(userRecord, 'passwordHash', 'emailVerifiedToken', 'resetPasswordToken'),
-        session: lodashOmit(sessionRecord, 'timeToLive'),
-      });
+      const { user, session } = await this.getSessionAndUser(cookieSessionToken);
+      return res.json({ user, session });
     } catch (error) {
       return res.json({ user: null, session: null });
     }
@@ -295,13 +303,17 @@ class AuthController {
       res.redirect('/error');
       return;
     }
-    res.redirect(`/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
+    res.redirect(
+      `/reset-password?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`,
+    );
   };
 
   static resetPassword = async (req: Request, res: Response) => {
     const { email, token, password, confirmPassword } = req.body as Partial<ResetPasswordRequest>;
     if (!email || !token || !password || !confirmPassword) {
-      return res.status(400).json({ message: 'Email, token, password, and confirm password are required' });
+      return res
+        .status(400)
+        .json({ message: 'Email, token, password, and confirm password are required' });
     }
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
@@ -336,6 +348,23 @@ class AuthController {
     }
     // Redirect to login page
     res.redirect('/login');
+  };
+
+  static authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    const cookieSessionToken = req.cookies[this.sessionCookieName];
+    if (!cookieSessionToken) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const { user, session } = await this.getSessionAndUser(cookieSessionToken);
+    if (!user || !session) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    if (!user.emailVerified) {
+      return res.status(401).json({ message: 'Email not verified' });
+    }
+    res.locals.user = user;
+    res.locals.session = session;
+    next();
   };
 }
 

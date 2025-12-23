@@ -1,14 +1,17 @@
+import express, { NextFunction, Request, Response, Router } from 'express';
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
-import express, { NextFunction, Request, Response, Router } from 'express';
+import { S3Client } from '@aws-sdk/client-s3';
 
 import AuthController from './controllers/auth';
+import UploadsController from './controllers/uploads';
 import { addDevLoggerMiddleware } from './helpers/dynamo';
+import { errorHandler } from './helpers/middleware';
 
 // API Routes
 const apiRoutes: Router = express.Router();
 
-// Setup DynamoDB clients
+// Setup AWS clients
 const dynamoDB = new DynamoDB();
 const dynamoDocClient = DynamoDBDocument.from(dynamoDB, {
   marshallOptions: { removeUndefinedValues: true },
@@ -16,8 +19,10 @@ const dynamoDocClient = DynamoDBDocument.from(dynamoDB, {
 if (process.env.NODE_ENV === 'development') {
   addDevLoggerMiddleware(dynamoDocClient);
 }
+const s3Client = new S3Client();
 
 apiRoutes.use(AuthController.init({ dynamoDocClient }));
+apiRoutes.use(UploadsController.init({ s3Client }));
 
 // Root endpoint
 apiRoutes.get('/', (_req: Request, res: Response) => {
@@ -32,20 +37,6 @@ apiRoutes.post('/echo', (req: Request, res: Response) => {
   res.json(req.body);
 });
 
-function serializeError(err: unknown) {
-  if (process.env.NODE_ENV === 'production') return { message: 'Internal server error' };
-  if (!(err instanceof Error)) return { message: String(err) };
-  return {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
-    ...Object.fromEntries(Object.entries(err)), // include custom props
-  };
-}
-apiRoutes.use((err: Error & { status?: number }, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  const status = err.status || 500;
-  res.status(status).json(serializeError(err));
-});
+apiRoutes.use(errorHandler);
 
 export default apiRoutes;
