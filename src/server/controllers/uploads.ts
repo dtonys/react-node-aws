@@ -27,7 +27,7 @@ class UploadsController {
     this.cdnBaseUrl = process.env.APP_ENDPOINT || '';
 
     const router = express.Router();
-    router.use(AuthController.authMiddleware);
+    router.use('/uploads', AuthController.authMiddleware);
     router.get('/uploads', this.listFiles);
     router.post('/uploads/users', this.uploadFile);
     router.delete('/uploads/users/:imageKey', this.deleteFile);
@@ -75,14 +75,12 @@ class UploadsController {
     });
 
     const response = await this.s3Client.send(command);
-    const files = (response.Contents || [])
-      .reverse()
-      .map((obj) => ({
-        key: obj.Key,
-        url: `${this.cdnBaseUrl}/${obj.Key}`,
-        size: obj.Size,
-        lastModified: obj.LastModified,
-      }));
+    const files = (response.Contents || []).reverse().map((obj) => ({
+      key: obj.Key,
+      url: `${this.cdnBaseUrl}/${obj.Key}`,
+      size: obj.Size,
+      lastModified: obj.LastModified,
+    }));
 
     res.json({ files });
   };
