@@ -28,8 +28,8 @@ const theme = createTheme({
     divider: '#000000',
     action: {
       active: '#000000',
-      hover: '#000000',
-      selected: '#000000',
+      hover: '#F5F5F5',
+      selected: '#E0E0E0',
       disabled: '#CCCCCC',
       disabledBackground: '#F5F5F5',
     },
@@ -207,20 +207,15 @@ const theme = createTheme({
     MuiAutocomplete: {
       styleOverrides: {
         option: {
-          '&:hover': {
-            backgroundColor: '#F5F5F5',
-          },
           '&[aria-selected="true"]': {
             backgroundColor: '#E0E0E0',
             '&:hover': {
               backgroundColor: '#D5D5D5',
             },
           },
-          '&.Mui-focused': {
-            backgroundColor: '#F5F5F5',
-          },
         },
         tag: {
+          backgroundColor: '#000000',
           color: '#FFFFFF',
           '& .MuiChip-deleteIcon': {
             color: '#FFFFFF',

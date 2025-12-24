@@ -96,6 +96,7 @@ import { useNotification } from 'client/components/NotificationContext';
 import Nav from 'client/components/Nav';
 import NavLoggedOut from 'client/components/NavLoggedOut';
 import FileUpload from 'client/pages/styleguide/components/FileUpload';
+import FormSection from 'client/pages/styleguide/sections/FormSection';
 import fetchClient from 'client/helpers/fetchClient';
 
 type TableOfContentsItem = {
@@ -114,6 +115,7 @@ const tableOfContents: TableOfContentsItem[] = [
   { id: 'ModalsSection', label: 'Modals' },
   { id: 'DatePickerSection', label: 'Date Time Pickers' },
   { id: 'FileUploadSection', label: 'File Upload' },
+  { id: 'FormSubmissionSection', label: 'Form Submission' },
 ];
 
 type StyleguideProps = {
@@ -1051,6 +1053,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                         }}
                       />
                     </Box>
+                    <Box sx={{ flex: '1 1 300px' }} />
                   </Box>
                 </Box>
                 <Box>
@@ -1193,6 +1196,11 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                 </Box>
               </Stack>
             </Box>
+
+            <Divider sx={{ my: 4 }} />
+
+            {/* Form Submission Section */}
+            <FormSection />
 
             <Box sx={{ height: 100 }} />
           </Box>
