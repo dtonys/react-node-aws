@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Snackbar, Alert, Slide, SlideProps } from '@mui/material';
+import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
+import { Snackbar, Alert, Slide, SlideProps, SnackbarCloseReason } from '@mui/material';
 
 // Color palette
 const green = '#2E7D32';
@@ -15,6 +15,7 @@ type Notification = {
   id: number;
   message: string;
   severity: NotificationSeverity;
+  exiting?: boolean;
 };
 
 type NotificationContextType = {
@@ -54,11 +55,13 @@ type NotificationProviderProps = {
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const idCounter = useRef(0);
 
   const showNotification = useCallback(
     (message: string, severity: NotificationSeverity = 'success') => {
-      const id = Date.now();
-      setNotifications((prev) => [...prev, { id, message, severity }]);
+      idCounter.current += 1;
+      const id = idCounter.current;
+      setNotifications((prev) => [{ id, message, severity }, ...prev]);
     },
     [],
   );
@@ -78,8 +81,17 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [showNotification],
   );
 
-  const handleClose = useCallback((id: number) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleClose = useCallback((id: number, reason?: SnackbarCloseReason) => {
+    // Don't close on clickaway - only on timeout or explicit close
+    if (reason === 'clickaway') {
+      return;
+    }
+    // Set exiting state to trigger fade out
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, exiting: true } : n)));
+    // Remove after fade animation completes (500ms)
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 500);
   }, []);
 
   return (
@@ -92,11 +104,13 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             key={notification.id}
             open={true}
             autoHideDuration={4000}
-            onClose={() => handleClose(notification.id)}
+            onClose={(_event, reason) => handleClose(notification.id, reason)}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            TransitionComponent={SlideTransition}
+            slots={{ transition: SlideTransition }}
             sx={{
               top: `${24 + index * 60}px !important`,
+              opacity: notification.exiting ? 0 : 1,
+              transition: 'opacity 0.5s ease-out, top 0.3s ease-out',
             }}
           >
             <Alert

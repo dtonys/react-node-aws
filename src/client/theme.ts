@@ -1,7 +1,10 @@
 import { createTheme } from '@mui/material/styles';
 
 // Color palette
+const green = '#2E7D32';
 const red = '#D32F2F';
+const blue = '#1976D2';
+const orange = '#ED6C02';
 
 const theme = createTheme({
   palette: {
@@ -35,15 +38,15 @@ const theme = createTheme({
       contrastText: '#FFFFFF',
     },
     warning: {
-      main: '#000000',
+      main: orange,
       contrastText: '#FFFFFF',
     },
     info: {
-      main: '#000000',
+      main: blue,
       contrastText: '#FFFFFF',
     },
     success: {
-      main: '#000000',
+      main: green,
       contrastText: '#FFFFFF',
     },
   },
@@ -92,6 +95,16 @@ const theme = createTheme({
               backgroundColor: '#000000',
               opacity: 0.9,
             },
+            '&.MuiButton-loading': {
+              color: 'transparent',
+            },
+            '&.MuiButton-loading.MuiButton-loadingPositionStart, &.MuiButton-loading.MuiButton-loadingPositionEnd':
+              {
+                color: '#FFFFFF',
+              },
+            '& .MuiButton-loadingIndicator': {
+              color: '#FFFFFF',
+            },
           },
           '&.MuiButton-outlined': {
             borderColor: '#000000',
@@ -101,12 +114,26 @@ const theme = createTheme({
               backgroundColor: '#000000',
               color: '#FFFFFF',
             },
+            '&.MuiButton-loading': {
+              color: 'transparent',
+            },
+            '&.MuiButton-loading.MuiButton-loadingPositionStart, &.MuiButton-loading.MuiButton-loadingPositionEnd':
+              {
+                color: '#000000',
+              },
           },
           '&.MuiButton-text': {
             color: '#000000',
             '&:hover': {
               backgroundColor: '#F5F5F5',
             },
+            '&.MuiButton-loading': {
+              color: 'transparent',
+            },
+            '&.MuiButton-loading.MuiButton-loadingPositionStart, &.MuiButton-loading.MuiButton-loadingPositionEnd':
+              {
+                color: '#000000',
+              },
           },
         },
       },
@@ -227,6 +254,16 @@ const theme = createTheme({
             '&:hover': {
               color: '#666666',
             },
+          },
+        },
+      },
+    },
+    MuiSkeleton: {
+      styleOverrides: {
+        root: {
+          '&::after': {
+            background:
+              'linear-gradient(90deg, transparent, rgba(150, 150, 150, 0.4), transparent)',
           },
         },
       },

@@ -30,9 +30,6 @@ const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
           sx={{ height: 50, mr: 2, cursor: 'pointer' }}
         />
         <Box sx={{ flexGrow: 1 }} />
-        <Typography variant="body2" sx={{ mr: 2 }}>
-          {userEmail}
-        </Typography>
         <Button
           color="inherit"
           variant="outlined"

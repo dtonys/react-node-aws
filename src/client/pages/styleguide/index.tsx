@@ -65,6 +65,8 @@ import {
   FormGroup,
   ToggleButtonGroup,
   ToggleButton,
+  Skeleton,
+  Menu,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
@@ -82,8 +84,9 @@ import {
   Notifications,
   Search,
   Mail,
-  Menu,
+  Menu as MenuIcon,
   CloudUpload,
+  Close,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -92,6 +95,8 @@ import { useState, useRef, useEffect, RefObject } from 'react';
 import { useNotification } from 'client/components/NotificationContext';
 import Nav from 'client/components/Nav';
 import NavLoggedOut from 'client/components/NavLoggedOut';
+import FileUpload from 'client/pages/styleguide/components/FileUpload';
+import fetchClient from 'client/helpers/fetchClient';
 
 type TableOfContentsItem = {
   id: string;
@@ -120,6 +125,11 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
   const currentUser = currentUserRef.current;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [fullscreenLoading, setFullscreenLoading] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [dateValue, setDateValue] = useState<Date | null>(new Date());
   const [timeValue, setTimeValue] = useState<Date | null>(new Date());
   const [dateTimeValue, setDateTimeValue] = useState<Date | null>(new Date());
@@ -127,6 +137,12 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
   const [toggleValue, setToggleValue] = useState<string>('one');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showSuccess, showError, showInfo } = useNotification();
+
+  // File Upload state
+  const [previewImgUrl, setPreviewImgUrl] = useState<string | null>(null);
+  const [apiImgUrl, setApiImgUrl] = useState<string | null>(null);
+  const [errorImgUrl, setErrorImgUrl] = useState<string | null>(null);
+  const [customSizeImgUrl, setCustomSizeImgUrl] = useState<string | null>(null);
 
   // Handle initial hash on page load
   useEffect(() => {
@@ -628,6 +644,38 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </Fab>
                   </Box>
                 </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Loading Buttons
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <Button loading variant="contained">
+                      Submit 222
+                    </Button>
+                    <Button loading variant="outlined">
+                      Submit
+                    </Button>
+                    <Button loading loadingIndicator="Loading…" variant="contained">
+                      Fetch data
+                    </Button>
+                    <Button
+                      loading
+                      loadingPosition="start"
+                      startIcon={<CloudUpload />}
+                      variant="contained"
+                    >
+                      Upload
+                    </Button>
+                    <Button
+                      loading
+                      loadingPosition="end"
+                      endIcon={<CloudUpload />}
+                      variant="contained"
+                    >
+                      Upload
+                    </Button>
+                  </Box>
+                </Box>
               </Stack>
             </Box>
 
@@ -641,24 +689,66 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Linear Progress
+                    Skeleton
                   </Typography>
-                  <Stack spacing={2}>
-                    <LinearProgress />
-                    <LinearProgress variant="determinate" value={60} />
-                    <LinearProgress color="secondary" />
-                  </Stack>
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    <Skeleton animation="wave" variant="circular" width={100} height={100} />
+                    <Skeleton animation="wave" variant="rectangular" width={100} height={100} />
+                    <Skeleton
+                      animation="wave"
+                      variant="rounded"
+                      width={100}
+                      height={100}
+                      sx={{ borderRadius: '10px' }}
+                    />
+                  </Box>
+                  <Box sx={{ mt: 2 }}>
+                    <Skeleton animation="wave" variant="text" sx={{ fontSize: '2rem' }} />
+                    <Skeleton animation="wave" variant="text" sx={{ fontSize: '2rem' }} />
+                    <Skeleton animation="wave" variant="text" sx={{ fontSize: '2rem' }} />
+                    <Skeleton
+                      animation="wave"
+                      variant="text"
+                      sx={{ fontSize: '2rem', width: '60%' }}
+                    />
+                  </Box>
                 </Box>
                 <Box>
                   <Typography variant="h6" gutterBottom>
                     Circular Progress
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <CircularProgress color="primary" />
+                    <CircularProgress color="secondary" />
+                    <CircularProgress color="success" />
+                    <CircularProgress color="error" />
+                    <CircularProgress color="info" />
+                    <CircularProgress color="warning" />
+                  </Box>
+                  <Box
+                    sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mt: 2 }}
+                  >
                     <CircularProgress size={24} />
-                    <CircularProgress />
+                    <CircularProgress size={40} />
                     <CircularProgress size={60} />
+                    <CircularProgress variant="determinate" value={25} />
+                    <CircularProgress variant="determinate" value={50} />
                     <CircularProgress variant="determinate" value={75} />
                   </Box>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Linear Progress
+                  </Typography>
+                  <Stack spacing={2}>
+                    <LinearProgress color="primary" />
+                    <LinearProgress color="secondary" />
+                    <LinearProgress color="success" />
+                    <LinearProgress color="error" />
+                    <LinearProgress color="info" />
+                    <LinearProgress color="warning" />
+                    <LinearProgress variant="determinate" value={60} />
+                  </Stack>
                 </Box>
               </Stack>
             </Box>
@@ -737,7 +827,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Dialog
+                    Basic Dialog
                   </Typography>
                   <Button variant="contained" onClick={() => setDialogOpen(true)}>
                     Open Dialog
@@ -757,6 +847,125 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </DialogActions>
                   </Dialog>
                 </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Fullscreen Loading
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setFullscreenLoading(true);
+                      setTimeout(() => setFullscreenLoading(false), 2000);
+                    }}
+                  >
+                    Show Loading (2s)
+                  </Button>
+                  <Dialog open={fullscreenLoading}>
+                    <DialogContent sx={{ p: 4 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <CircularProgress />
+                        <Typography>Loading...</Typography>
+                      </Box>
+                    </DialogContent>
+                  </Dialog>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Confirm Modal
+                  </Typography>
+                  <Button variant="contained" onClick={() => setConfirmModalOpen(true)}>
+                    Delete Item
+                  </Button>
+                  <Dialog open={confirmModalOpen} onClose={() => setConfirmModalOpen(false)}>
+                    <DialogTitle sx={{ pr: 6 }}>
+                      Delete Item
+                      <IconButton
+                        aria-label="close"
+                        onClick={() => setConfirmModalOpen(false)}
+                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                      >
+                        <Close />
+                      </IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                      <Typography>
+                        Are you sure you want to delete this item? This action cannot be undone.
+                      </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button variant="outlined" onClick={() => setConfirmModalOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => setConfirmModalOpen(false)}
+                      >
+                        Yes, Delete
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Drawer (Sidebar)
+                  </Typography>
+                  <Button variant="contained" onClick={() => setDrawerOpen(true)}>
+                    Open Right Drawer
+                  </Button>
+                  <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+                    <Box
+                      sx={{ width: 400, height: '100%', display: 'flex', flexDirection: 'column' }}
+                    >
+                      <Box
+                        sx={{
+                          p: 2,
+                          borderBottom: '1px solid',
+                          borderColor: 'divider',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Typography variant="h6">Drawer Header</Typography>
+                        <IconButton onClick={() => setDrawerOpen(false)}>
+                          <Close />
+                        </IconButton>
+                      </Box>
+                      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                        {[...Array(40)].map((_, index) => (
+                          <Typography key={index} sx={{ mb: 1 }}>
+                            Drawer content line {index + 1}
+                          </Typography>
+                        ))}
+                      </Box>
+                      <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                        <Button fullWidth variant="contained" onClick={() => setDrawerOpen(false)}>
+                          Close Drawer
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Drawer>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Menu
+                  </Typography>
+                  <Button variant="contained" ref={menuButtonRef} onClick={() => setMenuOpen(true)}>
+                    Open Menu
+                  </Button>
+                  <Menu
+                    anchorEl={menuButtonRef.current}
+                    open={menuOpen}
+                    onClose={() => setMenuOpen(false)}
+                  >
+                    <MenuItem onClick={() => setMenuOpen(false)}>Profile</MenuItem>
+                    <MenuItem onClick={() => setMenuOpen(false)}>My Account</MenuItem>
+                    <MenuItem onClick={() => setMenuOpen(false)}>Settings</MenuItem>
+                    <Divider />
+                    <MenuItem onClick={() => setMenuOpen(false)}>Logout</MenuItem>
+                  </Menu>
+                </Box>
               </Stack>
             </Box>
 
@@ -767,41 +976,130 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
               <Typography variant="h4" component="h4" gutterBottom>
                 Date Time Pickers
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                  <Box sx={{ flex: '1 1 300px' }}>
-                    <DatePicker
-                      label="Date Picker"
-                      value={dateValue}
-                      onChange={(newValue) => setDateValue(newValue)}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 300px' }}>
-                    <TimePicker
-                      label="Time Picker"
-                      value={timeValue}
-                      onChange={(newValue) => setTimeValue(newValue)}
-                    />
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Basic Pickers
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DatePicker
+                        label="Date Picker"
+                        value={dateValue}
+                        onChange={(newValue) => setDateValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            helperText: 'Select a date',
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <TimePicker
+                        label="Time Picker"
+                        value={timeValue}
+                        onChange={(newValue) => setTimeValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            helperText: 'Select a time',
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DateTimePicker
+                        label="Date & Time Picker"
+                        value={dateTimeValue}
+                        onChange={(newValue) => setDateTimeValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            helperText: 'Select date and time',
+                          },
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                  <Box sx={{ flex: '1 1 300px' }}>
-                    <DateTimePicker
-                      label="Date & Time Picker"
-                      value={dateTimeValue}
-                      onChange={(newValue) => setDateTimeValue(newValue)}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 300px' }}>
-                    <DatePicker
-                      label="Disabled Date Picker"
-                      value={dateValue}
-                      onChange={(newValue) => setDateValue(newValue)}
-                      disabled
-                    />
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Disabled State
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DatePicker
+                        label="Disabled Date"
+                        value={dateValue}
+                        onChange={(newValue) => setDateValue(newValue)}
+                        disabled
+                        slotProps={{
+                          textField: {
+                            helperText: 'This field is disabled',
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <TimePicker
+                        label="Disabled Time"
+                        value={timeValue}
+                        onChange={(newValue) => setTimeValue(newValue)}
+                        disabled
+                        slotProps={{
+                          textField: {
+                            helperText: 'This field is disabled',
+                          },
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Error State
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DatePicker
+                        label="Start Date"
+                        value={dateValue}
+                        onChange={(newValue) => setDateValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            error: true,
+                            helperText: 'Start date is required',
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DatePicker
+                        label="End Date"
+                        value={dateValue}
+                        onChange={(newValue) => setDateValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            error: true,
+                            helperText: 'End date must be after start date',
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: '1 1 300px' }}>
+                      <DateTimePicker
+                        label="Event Time"
+                        value={dateTimeValue}
+                        onChange={(newValue) => setDateTimeValue(newValue)}
+                        slotProps={{
+                          textField: {
+                            error: true,
+                            helperText: 'Invalid date/time format',
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
 
             <Divider sx={{ my: 4 }} />
@@ -837,30 +1135,61 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                 </Box>
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Drag & Drop Zone
+                    File Upload Component
                   </Typography>
-                  <Paper
-                    sx={{
-                      p: 4,
-                      border: '2px dashed',
-                      borderColor: 'divider',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        borderColor: 'primary.main',
-                        backgroundColor: 'action.hover',
-                      },
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                    <FileUpload
+                      inputLabelText="Upload in Memory"
+                      value={previewImgUrl}
+                      onChangeFile={(file) => {
+                        setPreviewImgUrl(URL.createObjectURL(file));
+                      }}
+                      onDeleteButtonClick={() => setPreviewImgUrl(null)}
+                      helperText="Preview only, not saved"
+                    />
+                    <FileUpload
+                      inputLabelText="Upload to API"
+                      value={apiImgUrl}
+                      onChangeFile={async (file) => {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const response = (await fetchClient.post(
+                          '/api/uploads/users',
+                          formData,
+                        )) as { url: string };
+                        setApiImgUrl(response.url);
+                        showSuccess('Image uploaded successfully');
+                      }}
+                      onDeleteButtonClick={() => setApiImgUrl(null)}
+                      helperText="Uploads to /api/uploads/users"
+                    />
+                    <FileUpload
+                      inputLabelText="With Error"
+                      value={errorImgUrl}
+                      onChangeFile={(file) => {
+                        setErrorImgUrl(URL.createObjectURL(file));
+                      }}
+                      onDeleteButtonClick={() => setErrorImgUrl(null)}
+                      error
+                      helperText="Image is required"
+                      required
+                    />
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Custom Size
+                  </Typography>
+                  <FileUpload
+                    inputLabelText="Large Upload Zone"
+                    value={customSizeImgUrl}
+                    onChangeFile={(file) => {
+                      setCustomSizeImgUrl(URL.createObjectURL(file));
                     }}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-                    <Typography variant="body1">
-                      Drag and drop files here, or click to select
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Supports: JPG, PNG, PDF (Max 10MB)
-                    </Typography>
-                  </Paper>
+                    onDeleteButtonClick={() => setCustomSizeImgUrl(null)}
+                    containerSx={{ width: '100%', height: '200px' }}
+                    helperText="Full width upload zone"
+                  />
                 </Box>
               </Stack>
             </Box>
