@@ -404,8 +404,8 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
               <Typography variant="h4" component="h4" gutterBottom>
                 Checkboxes & Radios
               </Typography>
-              <Stack spacing={3}>
-                <Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Radio Buttons (Horizontal)
                   </Typography>
@@ -422,7 +422,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     />
                   </RadioGroup>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Radio Buttons (Vertical)
                   </Typography>
@@ -439,7 +439,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     />
                   </RadioGroup>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Checkboxes (Horizontal)
                   </Typography>
@@ -454,7 +454,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     />
                   </FormGroup>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Checkboxes (Vertical)
                   </Typography>
@@ -469,7 +469,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     />
                   </FormGroup>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Switches (Horizontal)
                   </Typography>
@@ -481,7 +481,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     <FormControlLabel control={<Switch disabled />} label="Disabled" />
                   </FormGroup>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 45%' }}>
                   <Typography variant="h6" gutterBottom>
                     Switches (Vertical)
                   </Typography>
@@ -493,7 +493,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     <FormControlLabel control={<Switch disabled />} label="Disabled" />
                   </FormGroup>
                 </Box>
-              </Stack>
+              </Box>
             </Box>
 
             <Divider sx={{ my: 4 }} />
@@ -826,8 +826,8 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
               <Typography variant="h4" component="h4" gutterBottom>
                 Modals
               </Typography>
-              <Stack spacing={3}>
-                <Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="h6" gutterBottom>
                     Basic Dialog
                   </Typography>
@@ -849,7 +849,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </DialogActions>
                   </Dialog>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="h6" gutterBottom>
                     Fullscreen Loading
                   </Typography>
@@ -871,7 +871,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </DialogContent>
                   </Dialog>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="h6" gutterBottom>
                     Confirm Modal
                   </Typography>
@@ -908,7 +908,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </DialogActions>
                   </Dialog>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="h6" gutterBottom>
                     Drawer (Sidebar)
                   </Typography>
@@ -949,7 +949,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     </Box>
                   </Drawer>
                 </Box>
-                <Box>
+                <Box sx={{ flex: '1 1 300px' }}>
                   <Typography variant="h6" gutterBottom>
                     Menu
                   </Typography>
@@ -968,7 +968,8 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                     <MenuItem onClick={() => setMenuOpen(false)}>Logout</MenuItem>
                   </Menu>
                 </Box>
-              </Stack>
+                <Box sx={{ flex: '1 1 300px' }} />
+              </Box>
             </Box>
 
             <Divider sx={{ my: 4 }} />
