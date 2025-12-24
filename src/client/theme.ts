@@ -1,5 +1,8 @@
 import { createTheme } from '@mui/material/styles';
 
+// Color palette
+const red = '#D32F2F';
+
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -28,7 +31,7 @@ const theme = createTheme({
       disabledBackground: '#F5F5F5',
     },
     error: {
-      main: '#000000',
+      main: red,
       contrastText: '#FFFFFF',
     },
     warning: {
@@ -121,6 +124,18 @@ const theme = createTheme({
             '&.Mui-focused fieldset': {
               borderColor: '#000000',
             },
+            '&.Mui-error fieldset': {
+              borderColor: red,
+            },
+            '&.Mui-error:hover fieldset': {
+              borderColor: red,
+            },
+            '&.Mui-error.Mui-focused fieldset': {
+              borderColor: red,
+            },
+          },
+          '& .MuiFormHelperText-root.Mui-error': {
+            color: red,
           },
         },
       },
@@ -144,6 +159,75 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderColor: '#000000',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: '#F5F5F5',
+          },
+          '&.Mui-selected': {
+            backgroundColor: '#E0E0E0',
+            '&:hover': {
+              backgroundColor: '#D5D5D5',
+            },
+          },
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        option: {
+          '&:hover': {
+            backgroundColor: '#F5F5F5',
+          },
+          '&[aria-selected="true"]': {
+            backgroundColor: '#E0E0E0',
+            '&:hover': {
+              backgroundColor: '#D5D5D5',
+            },
+          },
+          '&.Mui-focused': {
+            backgroundColor: '#F5F5F5',
+          },
+        },
+        tag: {
+          color: '#FFFFFF',
+          '& .MuiChip-deleteIcon': {
+            color: '#FFFFFF',
+            '&:hover': {
+              color: '#CCCCCC',
+            },
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          '&.MuiChip-colorDefault.MuiChip-filled': {
+            color: '#FFFFFF',
+          },
+          '&.MuiChip-colorDefault.MuiChip-outlined': {
+            color: '#000000',
+            borderColor: '#000000',
+          },
+        },
+        deleteIcon: {
+          '.MuiChip-colorDefault.MuiChip-filled &': {
+            color: '#FFFFFF',
+            '&:hover': {
+              color: '#CCCCCC',
+            },
+          },
+          '.MuiChip-colorDefault.MuiChip-outlined &': {
+            color: '#000000',
+            '&:hover': {
+              color: '#666666',
+            },
+          },
         },
       },
     },

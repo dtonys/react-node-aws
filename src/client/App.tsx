@@ -3,7 +3,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { replaceState } from 'client/helpers/routing';
-import { NotificationProvider } from 'client/helpers/NotificationContext';
+import { NotificationProvider } from 'client/components/NotificationContext';
 import theme from './theme';
 
 type PathToMeta = {

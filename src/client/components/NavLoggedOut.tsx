@@ -1,24 +1,8 @@
 import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material';
-import { useState } from 'react';
 import { replaceState } from 'client/helpers/routing';
 import rnaLogo from 'client/images/RNA-white-2.png';
-import fetchClient from 'client/helpers/fetchClient';
 
-type NavProps = {
-  userEmail: string;
-  loadCookieSession: () => Promise<void>;
-};
-
-const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    await fetchClient.post('/api/auth/logout');
-    await loadCookieSession();
-    replaceState('/login');
-  };
-
+const NavLoggedOut = () => {
   return (
     <AppBar position="static" className="navbar">
       <Toolbar>
@@ -30,9 +14,6 @@ const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
           sx={{ height: 50, mr: 2, cursor: 'pointer' }}
         />
         <Box sx={{ flexGrow: 1 }} />
-        <Typography variant="body2" sx={{ mr: 2 }}>
-          {userEmail}
-        </Typography>
         <Button
           color="inherit"
           variant="outlined"
@@ -45,22 +26,21 @@ const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
           color="inherit"
           variant="outlined"
           sx={{ backgroundColor: 'white', color: 'black', mr: 1 }}
-          onClick={() => replaceState('/uploads')}
+          onClick={() => replaceState('/login')}
         >
-          Uploads
+          Login
         </Button>
         <Button
           color="inherit"
           variant="outlined"
           sx={{ backgroundColor: 'white', color: 'black' }}
-          onClick={handleLogout}
-          disabled={isLoading}
+          onClick={() => replaceState('/signup')}
         >
-          {isLoading ? 'Logging out...' : 'Logout'}
+          Signup
         </Button>
       </Toolbar>
     </AppBar>
   );
 };
 
-export default Nav;
+export default NavLoggedOut;

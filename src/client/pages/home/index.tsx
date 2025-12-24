@@ -10,24 +10,26 @@ const Home = ({ currentUser, loadCookieSession }: HomeProps) => {
   const userEmail = currentUser?.email || '';
 
   return (
-    <Box>
+    <Box className="app">
       <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
-      <Container maxWidth="sm">
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'calc(100vh - 64px)',
-            gap: 3,
-          }}
-        >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Welcome
-          </Typography>
-        </Box>
-      </Container>
+      <Box className="content">
+        <Container maxWidth="sm">
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '100%',
+              gap: 3,
+            }}
+          >
+            <Typography variant="h4" component="h1" gutterBottom>
+              Welcome
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
 };

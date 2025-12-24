@@ -2,7 +2,7 @@ import { Box, Container, TextField, Button, Link, Typography } from '@mui/materi
 import { useState } from 'react';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
-import { useNotification } from 'client/helpers/NotificationContext';
+import { useNotification } from 'client/components/NotificationContext';
 import rnaLogo from 'client/images/RNA-white-2.png';
 import { SignupRequest } from 'shared/types/auth';
 

@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect, useRef } from 'react';
 import Nav from 'client/components/Nav';
 import fetchClient from 'client/helpers/fetchClient';
-import { useNotification } from 'client/helpers/NotificationContext';
+import { useNotification } from 'client/components/NotificationContext';
 
 type UploadFile = {
   key: string;
@@ -76,10 +76,11 @@ const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
   };
 
   return (
-    <Box>
+    <Box className="app">
       <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
-      <Container maxWidth="md">
-        <Box sx={{ py: 3 }}>
+      <Box className="content">
+        <Container maxWidth="md">
+          <Box sx={{ py: 3 }}>
           <Box
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}
           >
@@ -152,8 +153,9 @@ const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
               ))}
             </Grid>
           )}
-        </Box>
-      </Container>
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
 };
