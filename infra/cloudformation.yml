@@ -554,6 +554,8 @@ Resources:
               Value: !Ref AWS::Region
             - Name: S3_ASSETS_BUCKET
               Value: !Ref AssetsBucket
+            - Name: OPENSEARCH_ENDPOINT
+              Value: https://vpc-react-node-aws-search-v5nreaaujr74farkujqfnlaya4.us-west-1.es.amazonaws.com
           LogConfiguration:
             LogDriver: awslogs
             Options:

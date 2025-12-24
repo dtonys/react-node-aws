@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'OpenSearch domain for dictionary search (VPC-based, single node)'
+
+Parameters:
+  VpcId:
+    Type: String
+    Default: vpc-06340a61
+    Description: VPC ID for deployment (same as main stack)
+
+  SubnetId:
+    Type: String
+    Default: subnet-f36b6ea8
+    Description: Subnet ID for OpenSearch (single AZ for single-node cluster)
+
+  ECSSecurityGroupId:
+    Type: String
+    Description: Security group ID of ECS tasks (to allow inbound access)
+
+  DomainName:
+    Type: String
+    Default: react-node-aws-search
+    Description: OpenSearch domain name (must be lowercase, 3-28 chars)
+
+Resources:
+  #############################################
+  # Security Group for OpenSearch
+  #############################################
+
+  OpenSearchSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for OpenSearch domain
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref ECSSecurityGroupId
+          Description: Allow HTTPS from ECS tasks
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-opensearch-sg
+
+  #############################################
+  # OpenSearch Domain
+  #############################################
+
+  OpenSearchDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      DomainName: !Ref DomainName
+      EngineVersion: OpenSearch_2.11
+
+      # Single node cluster (cheapest option)
+      ClusterConfig:
+        InstanceType: t3.small.search
+        InstanceCount: 1
+        DedicatedMasterEnabled: false
+        ZoneAwarenessEnabled: false
+        WarmEnabled: false
+
+      # EBS storage
+      EBSOptions:
+        EBSEnabled: true
+        VolumeType: gp3
+        VolumeSize: 10
+
+      # VPC configuration
+      VPCOptions:
+        SubnetIds:
+          - !Ref SubnetId
+        SecurityGroupIds:
+          - !Ref OpenSearchSecurityGroup
+
+      # Encryption settings
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      EncryptionAtRestOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: Policy-Min-TLS-1-2-2019-07
+
+      # Access policy (allows any authenticated AWS principal in the account)
+      # Fine-grained access control is handled by IAM
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+            Action: 'es:*'
+            Resource: !Sub 'arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*'
+
+      # Advanced options
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: 'true'
+
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-opensearch
+
+  #############################################
+  # IAM Policy for ECS Task Role
+  # (attach this to your existing ECS Task Role)
+  #############################################
+
+  OpenSearchAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${AWS::StackName}-opensearch-access
+      Description: Policy allowing full access to OpenSearch domain
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - es:*
+            Resource:
+              - !Sub 'arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}'
+              - !Sub 'arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/${DomainName}/*'
+
+Outputs:
+  OpenSearchDomainEndpoint:
+    Description: OpenSearch domain endpoint URL
+    Value: !Sub 'https://${OpenSearchDomain.DomainEndpoint}'
+    Export:
+      Name: !Sub ${AWS::StackName}-endpoint
+
+  OpenSearchDomainArn:
+    Description: OpenSearch domain ARN
+    Value: !GetAtt OpenSearchDomain.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-arn
+
+  OpenSearchSecurityGroupId:
+    Description: Security group ID for OpenSearch
+    Value: !Ref OpenSearchSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-sg-id
+
+  OpenSearchAccessPolicyArn:
+    Description: ARN of the IAM policy for OpenSearch access (attach to ECS Task Role)
+    Value: !Ref OpenSearchAccessPolicy
+    Export:
+      Name: !Sub ${AWS::StackName}-policy-arn

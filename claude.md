@@ -23,3 +23,4 @@ You are a senior fullstack typescript developer working with node.js, React 19, 
 - Use both inline styles and an external css file when styling.
   - Prefer using the external css files, using BEM syntax.
 - Create inline styles using the sx prop.
+- Reference the styleguide `src/client/pages/styleguide/index.tsx` when creating frontend components.
