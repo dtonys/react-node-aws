@@ -1,7 +1,8 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
-import { RefObject, useState } from 'react';
+import { useState } from 'react';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
+import { useNotification } from 'client/helpers/NotificationContext';
 import rnaLogo from 'client/images/RNA-white-2.png';
 import { LoginRequest } from 'shared/types/auth';
 
@@ -13,6 +14,7 @@ const Login = ({ loadCookieSession }: LoginProps) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showSuccess, showError } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,11 +23,14 @@ const Login = ({ loadCookieSession }: LoginProps) => {
     try {
       await fetchClient.post<LoginRequest>('/api/auth/login', { email, password });
       await loadCookieSession();
+      showSuccess('Login successful');
       // Redirect to home on success
       replaceState('/');
     } catch (err) {
       const error = err as Error & { data?: { message?: string } };
-      setError(error.data?.message || error.message || 'An error occurred during login');
+      const errorMessage = error.data?.message || error.message || 'An error occurred during login';
+      setError(errorMessage);
+      showError(errorMessage);
       setIsLoading(false);
     }
   };

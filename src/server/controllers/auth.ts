@@ -113,17 +113,21 @@ class AuthController {
       emailVerifiedToken,
       resetPasswordToken: null,
     };
+    // Save new user
+    try {
+      await this.dynamoDocClient.put({
+        TableName: this.authTable,
+        Item: user,
+        ConditionExpression: 'attribute_not_exists(#email)',
+        ExpressionAttributeNames: { '#email': 'email' },
+      });
+    } catch (error) {
+      res.status(400).json({ message: 'Server error' });
+      return;
+    }
     // send email with embedded verification token
     const { html, subject } = verifyEmail({ email, token: emailVerifiedToken });
     await sendEmail({ to: email, subject, html });
-
-    // Save new user
-    await this.dynamoDocClient.put({
-      TableName: this.authTable,
-      Item: user,
-      ConditionExpression: 'attribute_not_exists(#email)',
-      ExpressionAttributeNames: { '#email': 'email' },
-    });
     // Create session
     const sessionToken = await this.createSession(email);
     res.cookie(this.sessionCookieName, sessionToken, {

@@ -14,6 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect, useRef } from 'react';
 import Nav from 'client/components/Nav';
 import fetchClient from 'client/helpers/fetchClient';
+import { useNotification } from 'client/helpers/NotificationContext';
 
 type UploadFile = {
   key: string;
@@ -33,6 +34,7 @@ const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
   const [isLoadingFiles, setIsLoadingFiles] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showSuccess } = useNotification();
 
   const fetchUploads = async () => {
     const data = await fetchClient.get<{ files: UploadFile[] }>('/api/uploads');
@@ -54,6 +56,7 @@ const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
 
     await fetchClient.delete(`/api/uploads/users/${imageKey}`);
     await fetchUploads();
+    showSuccess('Image deleted successfully');
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +69,7 @@ const Uploads = ({ currentUser, loadCookieSession }: UploadsProps) => {
     await fetchClient.post('/api/uploads/users', formData);
     await fetchUploads();
     setIsUploading(false);
+    showSuccess('Image uploaded successfully');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

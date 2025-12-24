@@ -2,6 +2,7 @@ import { Box, Container, TextField, Button, Link, Typography } from '@mui/materi
 import { useState } from 'react';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
+import { useNotification } from 'client/helpers/NotificationContext';
 import rnaLogo from 'client/images/RNA-white-2.png';
 import { SignupRequest } from 'shared/types/auth';
 
@@ -15,19 +16,28 @@ const Signup = ({ loadCookieSession }: SignupProps) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { showSuccess, showError } = useNotification();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
-      await fetchClient.post<SignupRequest>('/api/auth/signup', { email, password, confirmPassword });
+      await fetchClient.post<SignupRequest>('/api/auth/signup', {
+        email,
+        password,
+        confirmPassword,
+      });
       await loadCookieSession();
+      showSuccess('Signup successful');
       // Redirect to home on success
       replaceState('/');
     } catch (err) {
       const error = err as Error & { data?: { message?: string } };
-      setError(error.data?.message || error.message || 'An error occurred during signup');
+      const errorMessage =
+        error.data?.message || error.message || 'An error occurred during signup';
+      setError(errorMessage);
+      showError(errorMessage);
       setIsLoading(false);
     }
   };

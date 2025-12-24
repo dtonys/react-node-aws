@@ -3,6 +3,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { replaceState } from 'client/helpers/routing';
+import { NotificationProvider } from 'client/helpers/NotificationContext';
 import theme from './theme';
 
 type PathToMeta = {
@@ -83,9 +84,11 @@ const App = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {PageComponent && (
-          <PageComponent currentUserRef={currentUserRef} loadCookieSession={loadCookieSession} />
-        )}
+        <NotificationProvider>
+          {PageComponent && (
+            <PageComponent currentUserRef={currentUserRef} loadCookieSession={loadCookieSession} />
+          )}
+        </NotificationProvider>
       </ThemeProvider>
     </LocalizationProvider>
   );
