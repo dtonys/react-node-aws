@@ -359,16 +359,20 @@ class AuthController {
     if (!cookieSessionToken) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    const { user, session } = await this.getSessionAndUser(cookieSessionToken);
-    if (!user || !session) {
+    try {
+      const { user, session } = await this.getSessionAndUser(cookieSessionToken);
+      if (!user || !session) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      if (!user.emailVerified) {
+        return res.status(401).json({ message: 'Email not verified' });
+      }
+      res.locals.user = user;
+      res.locals.session = session;
+      next();
+    } catch {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    if (!user.emailVerified) {
-      return res.status(401).json({ message: 'Email not verified' });
-    }
-    res.locals.user = user;
-    res.locals.session = session;
-    next();
   };
 }
 

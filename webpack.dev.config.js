@@ -97,6 +97,17 @@ module.exports = {
     //     cert: fs.readFileSync('dev.react-node-aws.com+2.pem'),
     //   },
     // },
+    client: {
+      overlay: {
+        runtimeErrors: (error) => {
+          // Ignore ResizeObserver loop errors - they are benign
+          if (error.message?.includes('ResizeObserver loop')) {
+            return false;
+          }
+          return true;
+        },
+      },
+    },
     allowedHosts: 'all',
     static: {
       directory: path.join(__dirname, 'public'),

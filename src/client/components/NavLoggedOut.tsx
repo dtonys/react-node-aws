@@ -1,5 +1,5 @@
 import { AppBar, Box, Toolbar, Typography, Button } from '@mui/material';
-import { replaceState } from 'client/helpers/routing';
+import { pushState } from 'client/helpers/routing';
 import rnaLogo from 'client/images/RNA-white-2.png';
 
 const NavLoggedOut = () => {
@@ -10,7 +10,7 @@ const NavLoggedOut = () => {
           component="img"
           src={rnaLogo}
           alt="Logo"
-          onClick={() => replaceState('/')}
+          onClick={() => pushState('/')}
           sx={{ height: 50, mr: 2, cursor: 'pointer' }}
         />
         <Box sx={{ flexGrow: 1 }} />
@@ -18,7 +18,7 @@ const NavLoggedOut = () => {
           color="inherit"
           variant="outlined"
           sx={{ backgroundColor: 'white', color: 'black', mr: 1 }}
-          onClick={() => replaceState('/styleguide')}
+          onClick={() => pushState('/styleguide')}
         >
           Styleguide
         </Button>
@@ -26,7 +26,7 @@ const NavLoggedOut = () => {
           color="inherit"
           variant="outlined"
           sx={{ backgroundColor: 'white', color: 'black', mr: 1 }}
-          onClick={() => replaceState('/login')}
+          onClick={() => pushState('/login')}
         >
           Login
         </Button>
@@ -34,7 +34,7 @@ const NavLoggedOut = () => {
           color="inherit"
           variant="outlined"
           sx={{ backgroundColor: 'white', color: 'black' }}
-          onClick={() => replaceState('/signup')}
+          onClick={() => pushState('/signup')}
         >
           Signup
         </Button>

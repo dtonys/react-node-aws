@@ -327,7 +327,10 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                   <Box sx={{ flex: '1 1 300px' }}>
                     <FormControl fullWidth>
                       <InputLabel>Basic Select</InputLabel>
-                      <Select label="Basic Select">
+                      <Select label="Basic Select" defaultValue="">
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
                         <MenuItem value={1}>Option 1</MenuItem>
                         <MenuItem value={2}>Option 2</MenuItem>
                         <MenuItem value={3}>Option 3</MenuItem>
@@ -350,7 +353,10 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                   <Box sx={{ flex: '1 1 300px' }}>
                     <FormControl fullWidth error>
                       <InputLabel>Error Select</InputLabel>
-                      <Select label="Error Select">
+                      <Select label="Error Select" defaultValue="">
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
                         <MenuItem value={1}>Option 1</MenuItem>
                         <MenuItem value={2}>Option 2</MenuItem>
                       </Select>
@@ -360,7 +366,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
                   <Box sx={{ flex: '1 1 300px' }}>
                     <FormControl fullWidth>
                       <InputLabel>Native Select</InputLabel>
-                      <Select label="Native Select" native>
+                      <Select label="Native Select" native defaultValue="">
                         <option value="" />
                         <option value={10}>Ten</option>
                         <option value={20}>Twenty</option>
