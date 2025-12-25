@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { Client } from '@opensearch-project/opensearch';
+import AuthController from './auth';
 
 const INDEX_NAME = 'dictionary';
 const INDEX_NAME_V2 = 'dictionary2';
@@ -29,7 +30,8 @@ class DictionaryController {
     router.delete('/dictionary/:word', this.deleteEntry);
     router.post('/dictionary/create-index', this.createIndex);
 
-    // v2 endpoints
+    // v2 endpoints (auth required)
+    router.use('/v2/dictionary', AuthController.authMiddleware);
     router.get('/v2/dictionary/word/:word', this.getWordV2);
     router.get('/v2/dictionary/search', this.searchV2);
     router.get('/v2/dictionary/autocomplete', this.autocompleteV2);

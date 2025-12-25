@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, RefObject } from 'react';
+import { useState, useEffect, useRef, RefObject, ReactNode } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { replaceState } from 'client/helpers/routing';
-import { NotificationProvider } from 'client/components/NotificationContext';
+import { NotificationProvider, useNotification } from 'client/components/NotificationContext';
 import theme from './theme';
 
 type PathToMeta = {
@@ -33,11 +33,36 @@ type DynamicImport = {
   default: React.ComponentType<PageComponentProps>;
 };
 
+type AppContentProps = {
+  currentUserRef: RefObject<Record<string, any> | null>;
+  sessionLoaded: boolean;
+  children: ReactNode;
+};
+
+function AppContent({ currentUserRef, sessionLoaded, children }: AppContentProps) {
+  const { showPersistent, hidePersistent } = useNotification();
+
+  useEffect(() => {
+    const user = currentUserRef.current;
+    if (user && !user.emailVerified) {
+      showPersistent(
+        'Please verify your email to get access to search, uploads, and more.',
+        'info',
+      );
+    } else {
+      hidePersistent();
+    }
+  }, [sessionLoaded]);
+
+  return <>{children}</>;
+}
+
 const App = () => {
   const [currentPath, setCurrentPath] = useState<string>(window.location.pathname);
   const [PageComponent, setPageComponent] =
     useState<React.ComponentType<PageComponentProps> | null>(null);
   const currentUserRef = useRef<Record<string, any> | null>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
 
   const onLocationChange = async () => {
     // Not found redirect
@@ -65,8 +90,12 @@ const App = () => {
     const sessionResponse = await fetch('/api/auth/session');
     console.log('sessionResponse', sessionResponse);
     const { user, session } = await sessionResponse.json();
-    if (user && session) currentUserRef.current = user;
-    else currentUserRef.current = null;
+    if (user && session) {
+      currentUserRef.current = user;
+    } else {
+      currentUserRef.current = null;
+    }
+    setSessionLoaded((prev) => !prev); // Toggle to trigger re-render
   }
 
   async function onInitialPageLoad() {
@@ -86,9 +115,14 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <NotificationProvider>
-          {PageComponent && (
-            <PageComponent currentUserRef={currentUserRef} loadCookieSession={loadCookieSession} />
-          )}
+          <AppContent currentUserRef={currentUserRef} sessionLoaded={sessionLoaded}>
+            {PageComponent && (
+              <PageComponent
+                currentUserRef={currentUserRef}
+                loadCookieSession={loadCookieSession}
+              />
+            )}
+          </AppContent>
         </NotificationProvider>
       </ThemeProvider>
     </LocalizationProvider>

@@ -125,7 +125,7 @@ const Styleguide = ({ currentUserRef, loadCookieSession }: StyleguideProps) => {
   return (
     <Box className="app">
       {currentUser ? (
-        <Nav userEmail={currentUser.email} loadCookieSession={loadCookieSession} />
+        <Nav userEmail={currentUser.email} isEmailVerified={Boolean(currentUser.emailVerified)} loadCookieSession={loadCookieSession} />
       ) : (
         <NavLoggedOut />
       )}

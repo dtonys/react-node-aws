@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
-import { Snackbar, Alert, Slide, SlideProps, SnackbarCloseReason } from '@mui/material';
+import { Snackbar, Alert, Slide, SlideProps, SnackbarCloseReason, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Color palette
 const green = '#2E7D32';
@@ -18,11 +19,18 @@ type Notification = {
   exiting?: boolean;
 };
 
+type PersistentNotification = {
+  message: string;
+  severity: NotificationSeverity;
+} | null;
+
 type NotificationContextType = {
   showNotification: (message: string, severity?: NotificationSeverity) => void;
   showSuccess: (message: string) => void;
   showError: (message: string) => void;
   showInfo: (message: string) => void;
+  showPersistent: (message: string, severity?: NotificationSeverity) => void;
+  hidePersistent: () => void;
 };
 
 const notificationColors = {
@@ -55,6 +63,8 @@ type NotificationProviderProps = {
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [persistentNotification, setPersistentNotification] =
+    useState<PersistentNotification>(null);
   const idCounter = useRef(0);
 
   const showNotification = useCallback(
@@ -81,6 +91,14 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [showNotification],
   );
 
+  const showPersistent = useCallback((message: string, severity: NotificationSeverity = 'info') => {
+    setPersistentNotification({ message, severity });
+  }, []);
+
+  const hidePersistent = useCallback(() => {
+    setPersistentNotification(null);
+  }, []);
+
   const handleClose = useCallback((id: number, reason?: SnackbarCloseReason) => {
     // Don't close on clickaway - only on timeout or explicit close
     if (reason === 'clickaway') {
@@ -94,9 +112,16 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }, 500);
   }, []);
 
+  const persistentColors = persistentNotification
+    ? notificationColors[persistentNotification.severity]
+    : null;
+
   return (
-    <NotificationContext.Provider value={{ showNotification, showSuccess, showError, showInfo }}>
+    <NotificationContext.Provider
+      value={{ showNotification, showSuccess, showError, showInfo, showPersistent, hidePersistent }}
+    >
       {children}
+      {/* Temporary notifications - top right, auto-dismiss */}
       {notifications.map((notification, index) => {
         const colors = notificationColors[notification.severity];
         return (
@@ -137,6 +162,23 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           </Snackbar>
         );
       })}
+      {/* Persistent notification - bottom right, manual dismiss only */}
+      {persistentNotification && persistentColors && (
+        <Snackbar open={true} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert
+            severity={persistentNotification.severity}
+            variant="filled"
+            action={
+              <IconButton size="small" aria-label="close" color="inherit" onClick={hidePersistent}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            }
+            sx={{ width: '100%' }}
+          >
+            {persistentNotification.message}
+          </Alert>
+        </Snackbar>
+      )}
     </NotificationContext.Provider>
   );
 }

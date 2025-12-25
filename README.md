@@ -331,3 +331,21 @@ curl "http://localhost:3000/api/dictionary/search?q=wrld"
 Once deployed to production, you can search directly from the browser:
 
 https://www.react-node-aws.com/api/dictionary/search?q=hello
+
+### Setup dictionary search
+
+Review https://github.com/CloudBytes-Academy/English-Dictionary-Open-Source.
+
+Download this CSV into `data/dictionary.csv`: https://raw.githubusercontent.com/CloudBytes-Academy/English-Dictionary-Open-Source/main/csv/dictionary.csv
+
+Then run the `src/scripts/importDictionary.ts` to populate the dictionary search index.
+
+This will enable a set of V2 APIs which provide search, autocomplete, word lookup, and random word:
+
+https://www.react-node-aws.com/api/v2/dictionary/word/dog
+
+https://www.react-node-aws.com/api/v2/dictionary/search?q=happy&limit=10&offset=0
+
+https://www.react-node-aws.com/api/v2/dictionary/autocomplete?q=hap&limit=10
+
+https://www.react-node-aws.com/api/v2/dictionary/random

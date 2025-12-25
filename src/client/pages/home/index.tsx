@@ -1,17 +1,24 @@
+import { RefObject } from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import Nav from 'client/components/Nav';
 
 type HomeProps = {
-  currentUser: Record<string, any> | null;
+  currentUserRef: RefObject<Record<string, any> | null>;
   loadCookieSession: () => Promise<void>;
 };
 
-const Home = ({ currentUser, loadCookieSession }: HomeProps) => {
+const Home = ({ currentUserRef, loadCookieSession }: HomeProps) => {
+  const currentUser = currentUserRef.current;
   const userEmail = currentUser?.email || '';
+  const isEmailVerified = Boolean(currentUser?.emailVerified);
 
   return (
     <Box className="app">
-      <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
+      <Nav
+        userEmail={userEmail}
+        isEmailVerified={isEmailVerified}
+        loadCookieSession={loadCookieSession}
+      />
       <Box className="content">
         <Container maxWidth="sm">
           <Box

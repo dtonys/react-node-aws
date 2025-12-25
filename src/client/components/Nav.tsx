@@ -10,10 +10,11 @@ const MOBILE_BREAKPOINT = 'md';
 
 type NavProps = {
   userEmail: string;
+  isEmailVerified: boolean;
   loadCookieSession: () => Promise<void>;
 };
 
-const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
+const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
@@ -61,22 +62,26 @@ const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
           >
             Styleguide
           </Button>
-          <Button
-            color="inherit"
-            variant="outlined"
-            sx={{ backgroundColor: 'white', color: 'black' }}
-            onClick={() => pushState('/search')}
-          >
-            Search
-          </Button>
-          <Button
-            color="inherit"
-            variant="outlined"
-            sx={{ backgroundColor: 'white', color: 'black' }}
-            onClick={() => pushState('/uploads')}
-          >
-            Uploads
-          </Button>
+          {isEmailVerified && (
+            <>
+              <Button
+                color="inherit"
+                variant="outlined"
+                sx={{ backgroundColor: 'white', color: 'black' }}
+                onClick={() => pushState('/search')}
+              >
+                Search
+              </Button>
+              <Button
+                color="inherit"
+                variant="outlined"
+                sx={{ backgroundColor: 'white', color: 'black' }}
+                onClick={() => pushState('/uploads')}
+              >
+                Uploads
+              </Button>
+            </>
+          )}
           <Button
             color="inherit"
             variant="outlined"
@@ -117,8 +122,12 @@ const Nav = ({ userEmail, loadCookieSession }: NavProps) => {
             }}
           >
             <MenuItem onClick={() => handleNavigate('/styleguide')}>Styleguide</MenuItem>
-            <MenuItem onClick={() => handleNavigate('/search')}>Search</MenuItem>
-            <MenuItem onClick={() => handleNavigate('/uploads')}>Uploads</MenuItem>
+            {isEmailVerified && (
+              <MenuItem onClick={() => handleNavigate('/search')}>Search</MenuItem>
+            )}
+            {isEmailVerified && (
+              <MenuItem onClick={() => handleNavigate('/uploads')}>Uploads</MenuItem>
+            )}
             <MenuItem onClick={handleLogout} disabled={isLoading}>
               {isLoading ? 'Logging out...' : 'Logout'}
             </MenuItem>

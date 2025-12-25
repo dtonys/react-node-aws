@@ -23,7 +23,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import CasinoIcon from '@mui/icons-material/Casino';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, RefObject } from 'react';
 import Nav from 'client/components/Nav';
 import fetchClient from 'client/helpers/fetchClient';
 
@@ -68,7 +68,7 @@ type RandomWordResponse = {
 };
 
 type SearchProps = {
-  currentUser: Record<string, any> | null;
+  currentUserRef: RefObject<Record<string, any> | null>;
   loadCookieSession: () => Promise<void>;
 };
 
@@ -91,8 +91,10 @@ const SEARCH_FIELDS = [
   { value: 'definition', label: 'Definition Only' },
 ];
 
-function Search({ currentUser, loadCookieSession }: SearchProps) {
+function Search({ currentUserRef, loadCookieSession }: SearchProps) {
+  const currentUser = currentUserRef.current;
   const userEmail = currentUser?.email || '';
+  const isEmailVerified = Boolean(currentUser?.emailVerified);
 
   // Search state
   const [query, setQuery] = useState('');
@@ -215,7 +217,11 @@ function Search({ currentUser, loadCookieSession }: SearchProps) {
 
   return (
     <Box className="app">
-      <Nav userEmail={userEmail} loadCookieSession={loadCookieSession} />
+      <Nav
+        userEmail={userEmail}
+        isEmailVerified={isEmailVerified}
+        loadCookieSession={loadCookieSession}
+      />
       <Box className="content">
         <Container maxWidth="lg">
           <Box sx={{ py: 3 }}>
