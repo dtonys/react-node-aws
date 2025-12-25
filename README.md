@@ -103,6 +103,8 @@ You can keep the stack name, certs, and other params defaulted as `react-node-aw
 
 The snippet below shows the minimum configs you need to update. Replace the hardcoded values with the ones connected to your AWS account.
 
+NOTE: Remove the OPENSEARCH_ENDPOINT until you have gone through [#Opensearch integration](##opensearch-integration-optional)
+
 ```
 // infra/deploy-server.sh
 ECR_REPO=964744224338.dkr.ecr.us-west-1.amazonaws.com/react-node-aws
@@ -205,3 +207,123 @@ This app ships with "Verify Email" and "Reset Password" which are vital for the 
 Use https://favicon.io/favicon-converter/ to generate favicons across platforms.
 
 Place your favicons in `src/client/images/favicons`. The webpack build will automatically copy them into the `/public` folder where they can be consumed by the browser.
+
+# OpenSearch Integration (optional)
+
+### Create and deploy opensearch server
+
+OpenSearch is AWS's version of elastic search.
+
+This setup is more complex and requires a bastion host to connect from your local env to the search cluster.
+
+Build and deploy your opensearch server:
+
+```
+./infra/deploy-opensearch
+```
+
+After it is created, use the AWS cli to get the endpoint:
+
+```
+aws cloudformation describe-stacks \
+  --stack-name react-node-aws-search \
+  --region us-west-1 \
+  --query 'Stacks[0].Outputs[?OutputKey==`OpenSearchDomainEndpoint`].OutputValue' \
+  --output text
+```
+
+Plug it in to the OPENSEARCH_ENDPOINT in your main stack.
+
+### Create bastion host and SSH tunnel
+
+Create a SSH key pair:
+
+```
+aws ec2 create-key-pair \
+  --key-name react-node-aws-key \
+  --region us-west-1 \
+  --query 'KeyMaterial' \
+  --output text > ~/.ssh/react-node-aws-key.pem
+
+chmod 400 ~/.ssh/react-node-aws-key.pem
+```
+
+Build and deploy your bastion server:
+
+```
+./infra/deploy-bastion.sh
+```
+
+Run a SSH tunnel locally, in the background, the script should provide this command for you.
+
+```
+ssh -i ~/.ssh/${KeyPairName}.pem -L 9243:OPENSEARCH_ENDPOINT:443 -N -f ec2-user@${BastionEIP}
+```
+
+Use `ps aux | grep ssh` to find and kill your tunnel if needed.
+
+Now add a security group to opensearch to allow connection from bastion host:
+
+```
+# Get the bastion security group ID
+BASTION_SG=$(aws cloudformation describe-stack-resources \
+  --stack-name react-node-aws-bastion \
+  --region us-west-1 \
+  --query "StackResources[?LogicalResourceId=='BastionSecurityGroup'].PhysicalResourceId" \
+  --output text)
+
+# Get the OpenSearch security group ID
+OPENSEARCH_SG=$(aws cloudformation describe-stack-resources \
+  --stack-name react-node-aws-search \
+  --region us-west-1 \
+  --query "StackResources[?LogicalResourceId=='OpenSearchSecurityGroup'].PhysicalResourceId" \
+  --output text)
+
+# Add rule allowing bastion to access OpenSearch
+aws ec2 authorize-security-group-ingress \
+  --group-id $OPENSEARCH_SG \
+  --protocol tcp \
+  --port 443 \
+  --source-group $BASTION_SG \
+  --region us-west-1
+```
+
+You can test the setup by SSHing to your bastion host and hitting the opensearch server.
+
+```
+ssh -i ~/.ssh/react-node-aws-key.pem ec2-user@52.9.9.158
+curl -k https://vpc-react-node-aws-search-v5nreaaujr74farkujqfnlaya4.us-west-1.es.amazonaws.com
+```
+
+On hitting the curl command, you should get a response like this:
+
+```
+{"Message":"User: anonymous is not authorized to perform: es:ESHttpGet because no resource-based policy allows the es:ESHttpGet action"}
+```
+
+This is good, this shows your bastion host can connect to the server.
+
+Now you can test the opensearch by creating an index, adding a few documents, and searching for them.
+
+Make sure the SSH tunnel is running before starting the server:
+
+```
+// Create index
+curl -X POST http://localhost:3000/api/dictionary/create-index
+
+// Insert documents
+curl -X POST http://localhost:3000/api/dictionary/index \
+  -H "Content-Type: application/json" \
+  -d '{"word": "hello", "definition": "A greeting used to begin a conversation", "partOfSpeech": "interjection", "example": "Hello, how are you?"}'
+curl -X POST http://localhost:3000/api/dictionary/index \
+  -H "Content-Type: application/json" \
+  -d '{"word": "world", "definition": "The earth and all its inhabitants", "partOfSpeech": "noun", "example": "She traveled the world."}'
+curl -X POST http://localhost:3000/api/dictionary/index \
+  -H "Content-Type: application/json" \
+  -d '{"word": "apple", "definition": "A round fruit with red, green, or yellow skin", "partOfSpeech": "noun", "example": "She ate an apple for lunch."}'
+
+// Search documents:
+curl "http://localhost:3000/api/dictionary/search?q=hello"
+curl "http://localhost:3000/api/dictionary/search?q=greeting"
+curl "http://localhost:3000/api/dictionary/search?q=wrld"
+```
