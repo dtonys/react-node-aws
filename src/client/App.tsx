@@ -21,6 +21,7 @@ const pathToMeta: PathToMeta = {
   '/styleguide': { component: 'styleguide', requireAuth: false },
   '/profile': { component: 'profile', requireAuth: true },
   '/uploads': { component: 'uploads', requireAuth: true },
+  '/search': { component: 'search', requireAuth: true },
 };
 
 type PageComponentProps = {

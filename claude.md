@@ -28,3 +28,7 @@ You are a senior fullstack typescript developer working with node.js, React 19, 
 ## Node.js server side conventions
 
 - Please don't wrap methods with try-catch blocks. Error handling is consolidated via an express error middleware which logs all error details.
+
+## React and frontend conventions
+
+- When defining links, please use pushState instead of replaceState. Replace state is an exceptional case, we only want to use it when handling redirects from pages we don't have access to.
