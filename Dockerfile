@@ -1,24 +1,35 @@
-# Use Node.js LTS version, slim is preferred as alpine can run into issues.
-FROM node:24.11.1-slim
+# Stage 1: Build
+FROM node:24.11.1-slim AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files & install all
+# Copy package files & install all dependencies (including devDependencies for build)
 COPY package*.json ./
 RUN npm ci
 
-# Copy source
-COPY --chown=node . .
-
-# Build Server
+# Copy source and build
+COPY . .
 RUN npm run server:build
 RUN npm run webpack:build
-RUN npm prune --production
 
-# Switch to non-root user for security
-RUN chown -R node:node /app
+# Stage 2: Production
+FROM node:24.11.1-slim
+
+WORKDIR /app
+
+# Set ownership of workdir to node user
+RUN chown node:node /app
+
+# Switch to node user before installing dependencies
 USER node
+
+# Copy package files & install production dependencies only (as node user)
+COPY --chown=node:node package*.json ./
+RUN npm ci --omit=dev
+
+# Copy built artifacts from builder stage
+COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=builder --chown=node:node /app/public ./public
 
 # Expose port
 EXPOSE 3000
