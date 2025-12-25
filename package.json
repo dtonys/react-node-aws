@@ -17,7 +17,8 @@
     "docker:ssh": "docker run --env-file .env -v ~/.aws:/home/node/.aws:ro -v $(pwd)/public:/app/public:ro -it react-node-aws:latest sh",
     "deploy": "npm run deploy:server && npm run deploy:client",
     "deploy:server": "./infra/deploy-server.sh",
-    "deploy:client": "./infra/deploy-client.sh"
+    "deploy:client": "./infra/deploy-client.sh",
+    "import:dictionary": "TS_NODE_PROJECT=src/server/tsconfig.json node -r ts-node/register/transpile-only -r tsconfig-paths/register src/scripts/importDictionary.ts"
   },
   "repository": {
     "type": "git",

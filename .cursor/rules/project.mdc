@@ -26,3 +26,7 @@ You are a senior fullstack typescript developer working with node.js, React 19, 
   - Prefer using the external css files, using BEM syntax.
 - Create inline styles using the sx prop.
 - Reference the styleguide `src/client/pages/styleguide/index.tsx` when creating frontend components.
+
+## Node.js server side conventions
+
+- Please don't wrap methods with try-catch blocks. Error handling is consolidated via an express error middleware which logs all error details.

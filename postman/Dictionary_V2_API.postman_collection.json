@@ -1,0 +1,325 @@
+{
+  "info": {
+    "name": "Dictionary V2 API",
+    "description": "API collection for the Dictionary V2 endpoints powered by OpenSearch",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search All Fields",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/search?q=happy&limit=10&offset=0",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "happy",
+                  "description": "Search query (required)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of results (default: 10)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Pagination offset (default: 0)"
+                }
+              ]
+            },
+            "description": "Search both word and definition fields with fuzzy matching"
+          }
+        },
+        {
+          "name": "Search Word Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/search?q=run&field=word&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "run",
+                  "description": "Search query"
+                },
+                {
+                  "key": "field",
+                  "value": "word",
+                  "description": "Search field: word, definition, or all"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search only the word field"
+          }
+        },
+        {
+          "name": "Search Definition Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/search?q=feeling of joy&field=definition&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "feeling of joy",
+                  "description": "Search query"
+                },
+                {
+                  "key": "field",
+                  "value": "definition",
+                  "description": "Search field: word, definition, or all"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search only the definition field"
+          }
+        },
+        {
+          "name": "Search with Word Type Filter",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/search?q=run&wordType=v.&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "run",
+                  "description": "Search query"
+                },
+                {
+                  "key": "wordType",
+                  "value": "v.",
+                  "description": "Filter by word type (n., v., adj., adv., etc.)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search with word type (part of speech) filter"
+          }
+        },
+        {
+          "name": "Search Nouns Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/search?q=happiness&wordType=n.&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "happiness",
+                  "description": "Search query"
+                },
+                {
+                  "key": "wordType",
+                  "value": "n.",
+                  "description": "Filter for nouns only"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search for nouns only"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Word Lookup",
+      "item": [
+        {
+          "name": "Get Word Definition",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/word/happy",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "word", "happy"]
+            },
+            "description": "Get all definitions for an exact word match"
+          }
+        },
+        {
+          "name": "Get Word - Run",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/word/run",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "word", "run"]
+            },
+            "description": "Get all definitions for 'run' (multiple word types)"
+          }
+        },
+        {
+          "name": "Get Word - Love",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/word/love",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "word", "love"]
+            },
+            "description": "Get all definitions for 'love'"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autocomplete",
+      "item": [
+        {
+          "name": "Autocomplete - hap",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/autocomplete?q=hap&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "autocomplete"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "hap",
+                  "description": "Prefix to match (required)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Max suggestions (default: 10)"
+                }
+              ]
+            },
+            "description": "Get word suggestions starting with 'hap'"
+          }
+        },
+        {
+          "name": "Autocomplete - bea",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/autocomplete?q=bea&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "autocomplete"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "bea",
+                  "description": "Prefix to match"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get word suggestions starting with 'bea'"
+          }
+        },
+        {
+          "name": "Autocomplete - pro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/autocomplete?q=pro&limit=15",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "autocomplete"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "pro",
+                  "description": "Prefix to match"
+                },
+                {
+                  "key": "limit",
+                  "value": "15",
+                  "description": "Get more suggestions"
+                }
+              ]
+            },
+            "description": "Get word suggestions starting with 'pro'"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Random",
+      "item": [
+        {
+          "name": "Get Random Word",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v2/dictionary/random",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v2", "dictionary", "random"]
+            },
+            "description": "Get a random word with its definition (great for 'word of the day')"
+          }
+        }
+      ]
+    }
+  ]
+}
