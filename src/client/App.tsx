@@ -142,14 +142,15 @@ const App = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Enable session history tracking when user is logged in
-  const isLoggedIn = Boolean(currentUserRef.current);
+  // Enable session history tracking only for logged in and verified users
+  const isLoggedInAndVerified =
+    Boolean(currentUserRef.current) && Boolean(currentUserRef.current?.emailVerified);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <SessionHistoryProvider enabled={isLoggedIn}>
+        <SessionHistoryProvider enabled={isLoggedInAndVerified}>
           <NotificationTracker currentUserRef={currentUserRef} sessionLoaded={sessionLoaded}>
             {PageComponent && (
               <PageComponent
