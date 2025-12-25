@@ -327,3 +327,7 @@ curl "http://localhost:3000/api/dictionary/search?q=hello"
 curl "http://localhost:3000/api/dictionary/search?q=greeting"
 curl "http://localhost:3000/api/dictionary/search?q=wrld"
 ```
+
+Once deployed to production, you can search directly from the browser:
+
+https://www.react-node-aws.com/api/dictionary/search?q=hello

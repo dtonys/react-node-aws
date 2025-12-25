@@ -29,16 +29,3 @@ export function createOpenSearchClient(): Client {
 
   return client;
 }
-
-// Development logger for OpenSearch operations
-export function logOpenSearchOperation(operation: string, body: unknown, result?: unknown) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(cyan, `OpenSearch: ${operation}`);
-    console.log(cyan, JSON.stringify(body, null, 2));
-    if (result) {
-      console.log(cyan, `${operation} =>`);
-      console.log(cyan, JSON.stringify(result, null, 2));
-    }
-    console.log('');
-  }
-}
