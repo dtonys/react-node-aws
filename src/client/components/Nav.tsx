@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { pushState } from 'client/helpers/routing';
 import rnaLogo from 'client/images/RNA-white-2.png';
 import fetchClient from 'client/helpers/fetchClient';
+import { useSessionHistory } from 'client/components/SessionHistoryContext';
 
 // Mobile breakpoint: below 'md' (900px) shows hamburger menu
 const MOBILE_BREAKPOINT = 'md';
@@ -18,6 +19,7 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
+  const { clearHistory } = useSessionHistory();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,6 +32,7 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
   const handleLogout = async () => {
     setIsLoading(true);
     handleMenuClose();
+    await clearHistory();
     await fetchClient.post('/api/auth/logout');
     await loadCookieSession();
     pushState('/login');
@@ -64,6 +67,14 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
           </Button>
           {isEmailVerified && (
             <>
+              <Button
+                color="inherit"
+                variant="outlined"
+                sx={{ backgroundColor: 'white', color: 'black' }}
+                onClick={() => pushState('/history')}
+              >
+                History
+              </Button>
               <Button
                 color="inherit"
                 variant="outlined"
@@ -122,6 +133,9 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
             }}
           >
             <MenuItem onClick={() => handleNavigate('/styleguide')}>Styleguide</MenuItem>
+            {isEmailVerified && (
+              <MenuItem onClick={() => handleNavigate('/history')}>History</MenuItem>
+            )}
             {isEmailVerified && (
               <MenuItem onClick={() => handleNavigate('/search')}>Search</MenuItem>
             )}

@@ -59,9 +59,10 @@ function SlideTransition(props: SlideProps) {
 
 type NotificationProviderProps = {
   children: ReactNode;
+  onNotification?: (message: string, severity: NotificationSeverity) => void;
 };
 
-export function NotificationProvider({ children }: NotificationProviderProps) {
+export function NotificationProvider({ children, onNotification }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [persistentNotification, setPersistentNotification] =
     useState<PersistentNotification>(null);
@@ -72,8 +73,9 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       idCounter.current += 1;
       const id = idCounter.current;
       setNotifications((prev) => [{ id, message, severity }, ...prev]);
+      onNotification?.(message, severity);
     },
-    [],
+    [onNotification],
   );
 
   const showSuccess = useCallback(

@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, RefObject, ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, RefObject, ReactNode } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { replaceState } from 'client/helpers/routing';
 import { NotificationProvider, useNotification } from 'client/components/NotificationContext';
+import { SessionHistoryProvider, useSessionHistory } from 'client/components/SessionHistoryContext';
 import theme from './theme';
 
 type PathToMeta = {
@@ -22,6 +23,7 @@ const pathToMeta: PathToMeta = {
   '/profile': { component: 'profile', requireAuth: true },
   '/uploads': { component: 'uploads', requireAuth: true },
   '/search': { component: 'search', requireAuth: true },
+  '/history': { component: 'history', requireAuth: true },
 };
 
 type PageComponentProps = {
@@ -55,6 +57,36 @@ function AppContent({ currentUserRef, sessionLoaded, children }: AppContentProps
   }, [sessionLoaded]);
 
   return <>{children}</>;
+}
+
+// Inner component to connect notification tracking to session history
+type NotificationTrackerProps = {
+  currentUserRef: RefObject<Record<string, any> | null>;
+  sessionLoaded: boolean;
+  children: ReactNode;
+};
+
+function NotificationTracker({
+  currentUserRef,
+  sessionLoaded,
+  children,
+}: NotificationTrackerProps) {
+  const { trackApiNotification } = useSessionHistory();
+
+  const handleNotification = useCallback(
+    (message: string, severity: 'success' | 'error' | 'info') => {
+      trackApiNotification(message, severity);
+    },
+    [trackApiNotification],
+  );
+
+  return (
+    <NotificationProvider onNotification={handleNotification}>
+      <AppContent currentUserRef={currentUserRef} sessionLoaded={sessionLoaded}>
+        {children}
+      </AppContent>
+    </NotificationProvider>
+  );
 }
 
 const App = () => {
@@ -110,20 +142,23 @@ const App = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Enable session history tracking when user is logged in
+  const isLoggedIn = Boolean(currentUserRef.current);
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <NotificationProvider>
-          <AppContent currentUserRef={currentUserRef} sessionLoaded={sessionLoaded}>
+        <SessionHistoryProvider enabled={isLoggedIn}>
+          <NotificationTracker currentUserRef={currentUserRef} sessionLoaded={sessionLoaded}>
             {PageComponent && (
               <PageComponent
                 currentUserRef={currentUserRef}
                 loadCookieSession={loadCookieSession}
               />
             )}
-          </AppContent>
-        </NotificationProvider>
+          </NotificationTracker>
+        </SessionHistoryProvider>
       </ThemeProvider>
     </LocalizationProvider>
   );

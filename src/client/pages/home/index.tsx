@@ -21,17 +21,8 @@ const Home = ({ currentUserRef, loadCookieSession }: HomeProps) => {
       />
       <Box className="content">
         <Container maxWidth="sm">
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '100%',
-              gap: 3,
-            }}
-          >
-            <Typography variant="h4" component="h1" gutterBottom>
+          <Box sx={{ py: 3 }}>
+            <Typography variant="h4" component="h1">
               Welcome
             </Typography>
           </Box>

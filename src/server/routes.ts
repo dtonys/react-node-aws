@@ -6,6 +6,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import AuthController from './controllers/auth';
 import UploadsController from './controllers/uploads';
 import DictionaryController from './controllers/dictionary';
+import SessionHistoryController from './controllers/sessionHistory';
 import { addDevLoggerMiddleware } from './helpers/dynamo';
 import { createOpenSearchClient } from './helpers/opensearch';
 import { errorHandler } from './helpers/middleware';
@@ -28,6 +29,9 @@ apiRoutes.use(AuthController.init({ dynamoDocClient }));
 apiRoutes.use(UploadsController.init({ s3Client }));
 if (opensearchClient) {
   apiRoutes.use(DictionaryController.init({ opensearchClient }));
+}
+if (process.env.REDIS_URL) {
+  apiRoutes.use(SessionHistoryController.init());
 }
 
 // Root endpoint

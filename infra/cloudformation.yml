@@ -556,6 +556,8 @@ Resources:
               Value: !Ref AssetsBucket
             - Name: OPENSEARCH_ENDPOINT
               Value: https://vpc-react-node-aws-search-v5nreaaujr74farkujqfnlaya4.us-west-1.es.amazonaws.com
+            - Name: REDIS_URL
+              Value: redis://react-node-aws-cache.1onrxo.0001.usw1.cache.amazonaws.com:6379
           LogConfiguration:
             LogDriver: awslogs
             Options:

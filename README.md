@@ -349,3 +349,43 @@ https://www.react-node-aws.com/api/v2/dictionary/search?q=happy&limit=10&offset=
 https://www.react-node-aws.com/api/v2/dictionary/autocomplete?q=hap&limit=10
 
 https://www.react-node-aws.com/api/v2/dictionary/random
+
+# Elasticache integration (optional)
+
+Make sure your bastion instance is deployed. If not, do that first:
+
+```
+ ./infra/deploy-bastion.sh
+```
+
+Run the deploy script to create your elasticache cluster.
+
+```
+# 1. Deploy ElastiCache (takes 5-10 minutes)
+./infra/deploy-elasticache.sh
+
+# 2. Copy the REDIS_URL from the output
+
+# 3. Update cloudformation.yml with the actual REDIS_URL value and uncomment it
+
+# 4. Re-deploy the main stack
+./infra/deploy-server.sh
+```
+
+After updating the main cloudformation with REDIS_URL, ensure your .env file is updated as well to point to the local endpoint:
+
+```
+ REDIS_URL=redis://localhost:6379
+```
+
+Then run an SSH tunnel to connect your local to the elasticache cluster:
+
+```
+ssh -i ~/.ssh/YOUR_KEY.pem -L 6379:react-node-aws-cache.1onrxo.0001.usw1.cache.amazonaws.com:6379 -N ec2-user@BASTION_IP
+```
+
+You can test the SSH tunnel and redis server by using the redis-cli:
+
+```
+redis-cli ping
+```

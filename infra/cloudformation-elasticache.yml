@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ElastiCache Redis for session history tracking'
+
+Parameters:
+  VpcId:
+    Type: String
+    Default: vpc-06340a61
+    Description: VPC ID for deployment (same as main stack)
+
+  SubnetId1:
+    Type: String
+    Default: subnet-f36b6ea8
+    Description: First subnet ID for ElastiCache
+
+  SubnetId2:
+    Type: String
+    Default: subnet-4cef062a
+    Description: Second subnet ID for ElastiCache
+
+  ECSSecurityGroupId:
+    Type: String
+    Description: Security group ID of ECS tasks (to allow inbound access)
+
+  BastionSecurityGroupId:
+    Type: String
+    Default: ''
+    Description: (Optional) Security group ID of bastion host for local access via SSH tunnel
+
+  CacheNodeType:
+    Type: String
+    Default: cache.t3.micro
+    Description: ElastiCache node type
+    AllowedValues:
+      - cache.t3.micro
+      - cache.t3.small
+      - cache.t3.medium
+      - cache.t4g.micro
+      - cache.t4g.small
+
+Conditions:
+  HasBastionSecurityGroup: !Not [!Equals [!Ref BastionSecurityGroupId, '']]
+
+Resources:
+  #############################################
+  # Security Group for ElastiCache
+  #############################################
+
+  ElastiCacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ElastiCache Redis
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref ECSSecurityGroupId
+          Description: Allow Redis from ECS tasks
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-redis-sg
+
+  # Allow bastion access (if bastion security group provided)
+  BastionIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: HasBastionSecurityGroup
+    Properties:
+      GroupId: !Ref ElastiCacheSecurityGroup
+      IpProtocol: tcp
+      FromPort: 6379
+      ToPort: 6379
+      SourceSecurityGroupId: !Ref BastionSecurityGroupId
+      Description: Allow Redis from bastion for SSH tunneling
+
+  #############################################
+  # ElastiCache Subnet Group
+  #############################################
+
+  ElastiCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      CacheSubnetGroupName: !Sub ${AWS::StackName}-subnet-group
+      Description: Subnet group for ElastiCache Redis
+      SubnetIds:
+        - !Ref SubnetId1
+        - !Ref SubnetId2
+
+  #############################################
+  # ElastiCache Redis Cluster
+  #############################################
+
+  RedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: !Sub ${AWS::StackName}
+      Engine: redis
+      EngineVersion: '7.1'
+      CacheNodeType: !Ref CacheNodeType
+      NumCacheNodes: 1
+      Port: 6379
+      CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref ElastiCacheSecurityGroup
+      # Disable automatic backups for cost savings (session data is ephemeral)
+      SnapshotRetentionLimit: 0
+      # Apply updates during maintenance window
+      AutoMinorVersionUpgrade: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-redis
+
+Outputs:
+  RedisEndpoint:
+    Description: Redis endpoint address
+    Value: !GetAtt RedisCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-endpoint
+
+  RedisPort:
+    Description: Redis port
+    Value: !GetAtt RedisCluster.RedisEndpoint.Port
+    Export:
+      Name: !Sub ${AWS::StackName}-port
+
+  RedisURL:
+    Description: Full Redis URL for REDIS_URL environment variable
+    Value: !Sub 'redis://${RedisCluster.RedisEndpoint.Address}:${RedisCluster.RedisEndpoint.Port}'
+    Export:
+      Name: !Sub ${AWS::StackName}-url
+
+  ElastiCacheSecurityGroupId:
+    Description: Security group ID for ElastiCache
+    Value: !Ref ElastiCacheSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-sg-id
