@@ -1,12 +1,13 @@
 import mjml2html from 'mjml';
 
-// TODO: Add images served from production CDN.
 type ResetPasswordProps = {
   email: string;
   token: string;
 };
 export default function resetPassword({ email, token }: ResetPasswordProps) {
-  const link = `${process.env.APP_ENDPOINT}/api/auth/reset-password?email=${email}&token=${token}`;
+  const appEndpoint = process.env.APP_ENDPOINT || 'https://www.react-node-aws.com';
+  const logoUrl = `${appEndpoint}/images/RNA-white-2.998e9d2c1dfde8bdd9c1.png`;
+  const link = `${appEndpoint}/api/auth/reset-password?email=${email}&token=${token}`;
   const subject = 'Reset your password';
   const mjmlText = `
     <mjml>
@@ -20,12 +21,12 @@ export default function resetPassword({ email, token }: ResetPasswordProps) {
           </mj-raw>
           <mj-section background-color="#f5f5f5" border-bottom="solid black 3px">
             <mj-group>
-                <mj-column width="60%">
-                  <mj-text font-size="20px" line-height="0" align="center">Reset</mj-text>
-                  <mj-text font-size="20px" line-height="35px" align="center">Password</mj-text>
+                <mj-column width="60%" vertical-align="middle">
+                  <mj-text font-size="20px" line-height="24px" align="center">Reset</mj-text>
+                  <mj-text font-size="20px" line-height="24px" align="center" padding-top="0">Password</mj-text>
                 </mj-column>
-                <mj-column width="40%">
-                  <mj-image padding="10px" width="50px" src="http://via.placeholder.com/200x200"></mj-image>
+                <mj-column width="40%" vertical-align="middle">
+                  <mj-image padding="10px" width="100px" src="${logoUrl}"></mj-image>
                 </mj-column>
             </mj-group>
           </mj-section>
