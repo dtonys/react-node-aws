@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Word of the Day Lambda and EventBridge for email campaigns'
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: react-node-aws.com
+    Description: Domain name for API endpoint
+
+Resources:
+  #############################################
+  # Lambda Execution Role
+  #############################################
+
+  WordOfDayLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
+
+  #############################################
+  # CloudWatch Log Group
+  #############################################
+
+  WordOfDayLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-lambda
+      RetentionInDays: 7
+
+  #############################################
+  # Lambda Function (No VPC - uses public API)
+  #############################################
+
+  WordOfDayLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: WordOfDayLogGroup
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-lambda
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Role: !GetAtt WordOfDayLambdaRole.Arn
+      Timeout: 120
+      MemorySize: 256
+      Environment:
+        Variables:
+          API_ENDPOINT: !Sub https://www.${DomainName}
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            console.log('Word of Day Lambda placeholder - deploy actual code with deploy-lambda-wotd.sh');
+            return { statusCode: 200, body: 'Placeholder' };
+          };
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-lambda
+
+  #############################################
+  # EventBridge Rule
+  #############################################
+
+  # 8 AM PST = 4 PM UTC (PST is UTC-8, PDT is UTC-7)
+  # Using 4 PM UTC for PST (winter) - adjust to 3 PM UTC for PDT (summer)
+  WordOfDayScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${AWS::StackName}-schedule
+      Description: Triggers Word of Day email at 8 AM PST daily
+      ScheduleExpression: cron(0 16 * * ? *)
+      State: ENABLED
+      Targets:
+        - Id: WordOfDayLambdaTarget
+          Arn: !GetAtt WordOfDayLambda.Arn
+
+  # Permission for EventBridge to invoke Lambda
+  WordOfDayLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref WordOfDayLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt WordOfDayScheduleRule.Arn
+
+Outputs:
+  LambdaArn:
+    Description: Word of Day Lambda ARN
+    Value: !GetAtt WordOfDayLambda.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-lambda-arn
+
+  LambdaName:
+    Description: Word of Day Lambda function name
+    Value: !Ref WordOfDayLambda
+    Export:
+      Name: !Sub ${AWS::StackName}-lambda-name
+
+  ScheduleRuleArn:
+    Description: EventBridge Schedule Rule ARN
+    Value: !GetAtt WordOfDayScheduleRule.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-schedule-arn

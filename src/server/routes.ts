@@ -28,7 +28,7 @@ const opensearchClient = process.env.OPENSEARCH_ENDPOINT ? createOpenSearchClien
 apiRoutes.use(AuthController.init({ dynamoDocClient }));
 apiRoutes.use(UploadsController.init({ s3Client }));
 if (opensearchClient) {
-  apiRoutes.use(DictionaryController.init({ opensearchClient }));
+  apiRoutes.use(DictionaryController.init({ opensearchClient, dynamoDocClient }));
 }
 if (process.env.REDIS_URL) {
   apiRoutes.use(SessionHistoryController.init());

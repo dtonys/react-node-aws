@@ -10,6 +10,36 @@
   <img src="./src/client/images/Tech Stack.png" />
 </p>
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Quickstart](#quickstart)
+- [Setup](#setup)
+  - [Pull code and install dependencies](#pull-code-and-install-dependencies)
+  - [AWS authentication](#aws-authentication)
+  - [Domain](#domain)
+  - [Email](#email)
+  - [Secrets](#secrets)
+- [AWS Build and Deploy](#aws-build-and-deploy)
+  - [Docker](#docker)
+  - [ECR](#ecr)
+  - [Update Cloudformation and Scripts](#update-cloudformation-and-scripts)
+  - [Build Cloudformation stacks and deploy code](#build-cloudformation-stacks-and-deploy-code)
+  - [Deleting Cloudformation stacks](#deleting-cloudformation-stacks)
+- [Local Development](#local-development)
+  - [Env variables](#env-variables)
+  - [Start Server in dev mode](#start-server-in-dev-mode)
+  - [Build and Start Server in production mode](#build-and-start-server-in-production-mode)
+  - [local subdomain](#local-subdomain)
+- [Misc](#misc)
+  - [Email Templating - MJML](#email-templating---mjml)
+  - [Favicons](#favicons)
+- [OpenSearch Integration (optional)](#opensearch-integration-optional)
+  - [Create and deploy opensearch server](#create-and-deploy-opensearch-server)
+  - [Create bastion host and SSH tunnel](#create-bastion-host-and-ssh-tunnel)
+  - [Setup dictionary search](#setup-dictionary-search)
+- [Elasticache integration (optional)](#elasticache-integration-optional)
+
 # Overview
 
 Simple and clean foundation for production quality web applications.

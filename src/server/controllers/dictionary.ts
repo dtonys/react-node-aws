@@ -1,12 +1,16 @@
 import express, { Request, Response } from 'express';
 import { Client } from '@opensearch-project/opensearch';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import AuthController from './auth';
 
 const INDEX_NAME = 'dictionary';
 const INDEX_NAME_V2 = 'dictionary2';
+const AUTH_TABLE = 'email-type';
+const WOTD_SUBSCRIPTION_TYPE = 'wotd-subscription';
 
 type DictionaryControllerConfig = {
   opensearchClient: Client;
+  dynamoDocClient: DynamoDBDocument;
 };
 
 type DictionaryEntry = {
@@ -15,12 +19,21 @@ type DictionaryEntry = {
   wordType?: string;
 };
 
+type WotdSubscription = {
+  email: string;
+  type: string;
+  daysRemaining: number;
+  subscribedAt: string;
+};
+
 class DictionaryController {
   private static client: Client;
+  private static dynamoDocClient: DynamoDBDocument;
 
-  static init({ opensearchClient }: DictionaryControllerConfig) {
+  static init({ opensearchClient, dynamoDocClient }: DictionaryControllerConfig) {
     console.log('Initializing dictionary controller...');
     this.client = opensearchClient;
+    this.dynamoDocClient = dynamoDocClient;
     const router = express.Router();
 
     // v1 endpoints (legacy)
@@ -36,6 +49,11 @@ class DictionaryController {
     router.get('/v2/dictionary/search', this.searchV2);
     router.get('/v2/dictionary/autocomplete', this.autocompleteV2);
     router.get('/v2/dictionary/random', this.randomWordV2);
+
+    // Word of the Day subscription endpoints (auth required)
+    router.post('/v2/dictionary/word-of-day/subscribe', this.subscribeWordOfDay);
+    router.delete('/v2/dictionary/word-of-day/subscribe', this.unsubscribeWordOfDay);
+    router.get('/v2/dictionary/word-of-day/status', this.getWordOfDayStatus);
 
     return router;
   }
@@ -426,6 +444,99 @@ class DictionaryController {
       word: entry.word,
       wordType: entry.wordType || null,
       definition: entry.definition,
+    });
+  };
+
+  // ============================================
+  // WORD OF THE DAY SUBSCRIPTION ENDPOINTS
+  // ============================================
+
+  // Subscribe to Word of the Day emails (3 days)
+  static subscribeWordOfDay = async (_req: Request, res: Response) => {
+    const user = res.locals.user;
+
+    // Check if already subscribed
+    const existing = await this.dynamoDocClient.get({
+      TableName: AUTH_TABLE,
+      Key: {
+        email: user.email,
+        type: WOTD_SUBSCRIPTION_TYPE,
+      },
+    });
+
+    if (existing.Item) {
+      const subscription = existing.Item as WotdSubscription;
+      res.status(400).json({
+        error: 'Already subscribed',
+        daysRemaining: subscription.daysRemaining,
+        subscribedAt: subscription.subscribedAt,
+      });
+      return;
+    }
+
+    // Create subscription
+    const subscription: WotdSubscription = {
+      email: user.email,
+      type: WOTD_SUBSCRIPTION_TYPE,
+      daysRemaining: 3,
+      subscribedAt: new Date().toISOString(),
+    };
+
+    await this.dynamoDocClient.put({
+      TableName: AUTH_TABLE,
+      Item: subscription,
+    });
+
+    res.json({
+      success: true,
+      message: 'Subscribed to Word of the Day! You will receive emails at 8 AM PST for 3 days.',
+      daysRemaining: subscription.daysRemaining,
+      subscribedAt: subscription.subscribedAt,
+    });
+  };
+
+  // Unsubscribe from Word of the Day emails
+  static unsubscribeWordOfDay = async (_req: Request, res: Response) => {
+    const user = res.locals.user;
+
+    await this.dynamoDocClient.delete({
+      TableName: AUTH_TABLE,
+      Key: {
+        email: user.email,
+        type: WOTD_SUBSCRIPTION_TYPE,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Unsubscribed from Word of the Day',
+    });
+  };
+
+  // Get Word of the Day subscription status
+  static getWordOfDayStatus = async (_req: Request, res: Response) => {
+    const user = res.locals.user;
+
+    const result = await this.dynamoDocClient.get({
+      TableName: AUTH_TABLE,
+      Key: {
+        email: user.email,
+        type: WOTD_SUBSCRIPTION_TYPE,
+      },
+    });
+
+    if (!result.Item) {
+      res.json({
+        subscribed: false,
+      });
+      return;
+    }
+
+    const subscription = result.Item as WotdSubscription;
+    res.json({
+      subscribed: true,
+      daysRemaining: subscription.daysRemaining,
+      subscribedAt: subscription.subscribedAt,
     });
   };
 }

@@ -19,10 +19,13 @@ import {
   Divider,
   IconButton,
   Pagination,
+  Alert,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CasinoIcon from '@mui/icons-material/Casino';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import EmailIcon from '@mui/icons-material/Email';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useState, useEffect, useCallback, RefObject } from 'react';
 import Nav from 'client/components/Nav';
 import fetchClient from 'client/helpers/fetchClient';
@@ -65,6 +68,19 @@ type RandomWordResponse = {
   word: string;
   wordType: string | null;
   definition: string;
+};
+
+type WotdStatusResponse = {
+  subscribed: boolean;
+  daysRemaining?: number;
+  subscribedAt?: string;
+};
+
+type WotdSubscribeResponse = {
+  success: boolean;
+  message: string;
+  daysRemaining: number;
+  subscribedAt: string;
 };
 
 type SearchProps = {
@@ -119,6 +135,15 @@ function Search({ currentUserRef, loadCookieSession }: SearchProps) {
   // Random word state
   const [randomWord, setRandomWord] = useState<RandomWordResponse | null>(null);
   const [isLoadingRandom, setIsLoadingRandom] = useState(false);
+
+  // Word of the Day subscription state
+  const [wotdStatus, setWotdStatus] = useState<WotdStatusResponse | null>(null);
+  const [isLoadingWotdStatus, setIsLoadingWotdStatus] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   // Debounced autocomplete
   useEffect(() => {
@@ -208,10 +233,68 @@ function Search({ currentUserRef, loadCookieSession }: SearchProps) {
     setIsLoadingRandom(false);
   };
 
-  // Load random word on mount
+  // Check Word of the Day subscription status
+  const checkWotdStatus = useCallback(async () => {
+    if (!currentUser) return;
+
+    setIsLoadingWotdStatus(true);
+    try {
+      const data = await fetchClient.get<WotdStatusResponse>(
+        '/api/v2/dictionary/word-of-day/status',
+      );
+      setWotdStatus(data);
+    } catch {
+      setWotdStatus(null);
+    }
+    setIsLoadingWotdStatus(false);
+  }, [currentUser]);
+
+  // Subscribe to Word of the Day
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    setSubscriptionMessage(null);
+
+    try {
+      const data = await fetchClient.post<WotdSubscribeResponse>(
+        '/api/v2/dictionary/word-of-day/subscribe',
+        {},
+      );
+      setWotdStatus({ subscribed: true, daysRemaining: data.daysRemaining });
+      setSubscriptionMessage({ type: 'success', text: data.message });
+    } catch {
+      setSubscriptionMessage({
+        type: 'error',
+        text: 'Failed to subscribe. Please try again.',
+      });
+    }
+
+    setIsSubscribing(false);
+  };
+
+  // Unsubscribe from Word of the Day
+  const handleUnsubscribe = async () => {
+    setIsSubscribing(true);
+    setSubscriptionMessage(null);
+
+    try {
+      await fetchClient.delete('/api/v2/dictionary/word-of-day/subscribe');
+      setWotdStatus({ subscribed: false });
+      setSubscriptionMessage({ type: 'success', text: 'Unsubscribed successfully.' });
+    } catch {
+      setSubscriptionMessage({
+        type: 'error',
+        text: 'Failed to unsubscribe. Please try again.',
+      });
+    }
+
+    setIsSubscribing(false);
+  };
+
+  // Load random word and subscription status on mount
   useEffect(() => {
     handleRandomWord();
-  }, []);
+    checkWotdStatus();
+  }, [checkWotdStatus]);
 
   const totalPages = Math.ceil(total / RESULTS_PER_PAGE);
 
@@ -424,6 +507,69 @@ function Search({ currentUserRef, loadCookieSession }: SearchProps) {
                         {randomWord.definition}
                       </Typography>
                     </>
+                  )}
+
+                  {/* Word of the Day Email Subscription */}
+                  {currentUser && (
+                    <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+                      >
+                        <EmailIcon fontSize="small" color="primary" />
+                        Daily Email Campaign
+                      </Typography>
+
+                      {isLoadingWotdStatus ? (
+                        <CircularProgress size={20} />
+                      ) : wotdStatus?.subscribed ? (
+                        <Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                            <CheckCircleIcon fontSize="small" color="success" />
+                            <Typography variant="body2" color="success.main">
+                              Subscribed ({wotdStatus.daysRemaining} day
+                              {wotdStatus.daysRemaining !== 1 ? 's' : ''} left)
+                            </Typography>
+                          </Box>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={handleUnsubscribe}
+                            disabled={isSubscribing}
+                          >
+                            {isSubscribing ? <CircularProgress size={16} /> : 'Unsubscribe'}
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Get a new word delivered to your inbox at 8 AM PST for 3 days!
+                          </Typography>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            onClick={handleSubscribe}
+                            disabled={isSubscribing}
+                            startIcon={
+                              isSubscribing ? <CircularProgress size={16} /> : <EmailIcon />
+                            }
+                          >
+                            Subscribe
+                          </Button>
+                        </Box>
+                      )}
+
+                      {subscriptionMessage && (
+                        <Alert
+                          severity={subscriptionMessage.type}
+                          sx={{ mt: 1 }}
+                          onClose={() => setSubscriptionMessage(null)}
+                        >
+                          {subscriptionMessage.text}
+                        </Alert>
+                      )}
+                    </Box>
                   )}
                 </Paper>
 

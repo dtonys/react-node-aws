@@ -43,13 +43,13 @@ class AuthController {
     return router;
   }
 
-  static createSession = async (email: string) => {
+  static createSession = async (email: string, timeToLive: number = _30_DAYS_SECONDS) => {
     const sessionToken = encrypt(email);
     const session: SessionRecord = {
       email,
       type: `SESSION#${sessionToken}`,
       createdAt: new Date().toISOString(),
-      timeToLive: Math.floor(Date.now() / 1000) + _30_DAYS_SECONDS, // 30 days
+      timeToLive: Math.floor(Date.now() / 1000) + timeToLive, // 30 days
     };
     await this.dynamoDocClient.put({
       TableName: this.authTable,
