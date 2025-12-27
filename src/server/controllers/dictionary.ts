@@ -45,6 +45,7 @@ class DictionaryController {
 
     // v2 endpoints (auth required)
     router.use('/v2/dictionary', AuthController.authMiddleware);
+    router.get('/v2/dictionary/all', this.getAllV2);
     router.get('/v2/dictionary/word/:word', this.getWordV2);
     router.get('/v2/dictionary/search', this.searchV2);
     router.get('/v2/dictionary/autocomplete', this.autocompleteV2);
@@ -222,6 +223,42 @@ class DictionaryController {
   // ============================================
   // V2 ENDPOINTS
   // ============================================
+
+  // Get all dictionary entries with pagination, sorted alphabetically
+  static getAllV2 = async (req: Request, res: Response) => {
+    const { limit = 1000, offset = 0 } = req.query;
+
+    const result = await this.client.search({
+      index: INDEX_NAME_V2,
+      body: {
+        from: Number(offset),
+        size: Number(limit),
+        query: {
+          match_all: {},
+        },
+        sort: [{ 'word.keyword': { order: 'asc' } }],
+      },
+    });
+
+    type HitResult = {
+      _id: string;
+      _source: DictionaryEntry;
+    };
+    const hits = (result.body.hits.hits as unknown as HitResult[]).map((hit) => ({
+      id: hit._id,
+      word: hit._source.word,
+      wordType: hit._source.wordType || null,
+      definition: hit._source.definition,
+    }));
+
+    const total = result.body.hits.total;
+    res.json({
+      total: typeof total === 'number' ? total : (total?.value ?? 0),
+      offset: Number(offset),
+      limit: Number(limit),
+      hits,
+    });
+  };
 
   // Get all definitions for a specific word (exact match)
   static getWordV2 = async (req: Request, res: Response) => {

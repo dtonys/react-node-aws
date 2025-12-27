@@ -9,7 +9,7 @@ await esbuild.build({
   entryPoints: ['index.ts'],
   bundle: true,
   platform: 'node',
-  target: 'node20',
+  target: 'node24',
   outfile: 'dist/index.js',
   external: ['@aws-sdk/*', 'mjml', 'mjml-*'],
   alias: {

@@ -44,6 +44,7 @@
     "@aws-sdk/lib-dynamodb": "^3.940.0",
     "@aws-sdk/lib-storage": "^3.957.0",
     "@opensearch-project/opensearch": "^3.5.1",
+    "ag-grid-react": "^35.0.0",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",

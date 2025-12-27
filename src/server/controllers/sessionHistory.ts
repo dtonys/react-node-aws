@@ -43,17 +43,23 @@ class SessionHistoryController {
 
   static recordEvent = async (req: Request, res: Response) => {
     const sessionToken = req.cookies['web.session'];
-    const event: SessionEvent = req.body;
+    const { events } = req.body as { events: SessionEvent[] };
+
+    if (!events || !Array.isArray(events) || events.length === 0) {
+      res.status(400).json({ error: 'events array is required' });
+      return;
+    }
 
     const redis = getRedisClient();
     const key = this.getSessionKey(sessionToken);
 
-    // Add event to the list
-    await redis.rpush(key, JSON.stringify(event));
+    // Add all events to the list
+    const serializedEvents = events.map((event) => JSON.stringify(event));
+    await redis.rpush(key, ...serializedEvents);
     // Set/refresh TTL
     await redis.expire(key, SESSION_HISTORY_TTL);
 
-    res.json({ success: true });
+    res.json({ success: true, count: events.length });
   };
 
   static getEvents = async (req: Request, res: Response) => {

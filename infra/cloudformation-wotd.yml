@@ -64,7 +64,7 @@ Resources:
     DependsOn: WordOfDayLogGroup
     Properties:
       FunctionName: !Sub ${AWS::StackName}-lambda
-      Runtime: nodejs20.x
+      Runtime: nodejs24.x
       Handler: index.handler
       Role: !GetAtt WordOfDayLambdaRole.Arn
       Timeout: 120

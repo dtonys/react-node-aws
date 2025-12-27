@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useCallback, useRef, ReactNode } from 'react';
 import fetchClient from 'client/helpers/fetchClient';
 
 // Event types matching backend
@@ -29,18 +29,51 @@ type SessionHistoryContextType = {
 
 const SessionHistoryContext = createContext<SessionHistoryContextType | null>(null);
 
+const BATCH_SIZE = 5;
+const FLUSH_INTERVAL_MS = 5000; // Flush after 5 seconds even if batch not full
+
 type SessionHistoryProviderProps = {
   children: ReactNode;
   enabled: boolean;
 };
 
 export function SessionHistoryProvider({ children, enabled }: SessionHistoryProviderProps) {
-  const sendEvent = useCallback(
-    async (event: SessionEvent) => {
+  const eventQueueRef = useRef<SessionEvent[]>([]);
+  const flushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushEvents = useCallback(async () => {
+    if (!enabled || eventQueueRef.current.length === 0) return;
+
+    const eventsToSend = [...eventQueueRef.current];
+    eventQueueRef.current = [];
+
+    // Clear any pending flush timeout
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+
+    await fetchClient.post('/api/session-history/events', { events: eventsToSend });
+  }, [enabled]);
+
+  const queueEvent = useCallback(
+    (event: SessionEvent) => {
       if (!enabled) return;
-      await fetchClient.post('/api/session-history/events', event);
+
+      eventQueueRef.current.push(event);
+
+      // Flush immediately if batch size reached
+      if (eventQueueRef.current.length >= BATCH_SIZE) {
+        void flushEvents();
+      } else if (!flushTimeoutRef.current) {
+        // Set a timeout to flush after interval if batch not full
+        flushTimeoutRef.current = setTimeout(() => {
+          flushTimeoutRef.current = null;
+          void flushEvents();
+        }, FLUSH_INTERVAL_MS);
+      }
     },
-    [enabled],
+    [enabled, flushEvents],
   );
 
   const trackClick = useCallback(
@@ -56,9 +89,9 @@ export function SessionHistoryProvider({ children, enabled }: SessionHistoryProv
           path: window.location.pathname,
         },
       };
-      void sendEvent(event);
+      queueEvent(event);
     },
-    [sendEvent],
+    [queueEvent],
   );
 
   const trackApiNotification = useCallback(
@@ -71,14 +104,43 @@ export function SessionHistoryProvider({ children, enabled }: SessionHistoryProv
           severity,
         },
       };
-      void sendEvent(event);
+      queueEvent(event);
     },
-    [sendEvent],
+    [queueEvent],
   );
 
   const clearHistory = useCallback(async () => {
     if (!enabled) return;
+    // Flush any pending events before clearing
+    await flushEvents();
     await fetchClient.delete('/api/session-history/events');
+  }, [enabled, flushEvents]);
+
+  // Flush events on unmount or when disabled
+  useEffect(() => {
+    return () => {
+      if (flushTimeoutRef.current) {
+        clearTimeout(flushTimeoutRef.current);
+      }
+      // Flush remaining events synchronously isn't possible,
+      // but we clear the timeout to prevent memory leaks
+    };
+  }, []);
+
+  // Flush events before page unload
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleBeforeUnload = () => {
+      if (eventQueueRef.current.length > 0) {
+        // Use sendBeacon for reliable delivery on page unload
+        const data = JSON.stringify({ events: eventQueueRef.current });
+        navigator.sendBeacon('/api/session-history/events', data);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [enabled]);
 
   // Global click listener

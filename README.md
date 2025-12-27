@@ -419,3 +419,15 @@ You can test the SSH tunnel and redis server by using the redis-cli:
 ```
 redis-cli ping
 ```
+
+# Lambda + event bridge integration (optional)
+
+The lambda + cloudwatch are combined to create a featured called "Word of the Day" (wotd)
+
+A daily schedule setup by eventbridge will run at 8 AM and execute a lambda function that will pull all subscribers and email them a random word from the dictionary service.
+
+You can build and deploy the lambda by running the script
+
+```
+./infra/deploy-wotd.sh
+```

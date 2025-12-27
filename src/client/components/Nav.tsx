@@ -71,6 +71,14 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
                 color="inherit"
                 variant="outlined"
                 sx={{ backgroundColor: 'white', color: 'black' }}
+                onClick={() => pushState('/data-grid')}
+              >
+                Data Grid
+              </Button>
+              <Button
+                color="inherit"
+                variant="outlined"
+                sx={{ backgroundColor: 'white', color: 'black' }}
                 onClick={() => pushState('/history')}
               >
                 History
@@ -133,6 +141,9 @@ const Nav = ({ userEmail, isEmailVerified, loadCookieSession }: NavProps) => {
             }}
           >
             <MenuItem onClick={() => handleNavigate('/styleguide')}>Styleguide</MenuItem>
+            {isEmailVerified && (
+              <MenuItem onClick={() => handleNavigate('/data-grid')}>Data Grid</MenuItem>
+            )}
             {isEmailVerified && (
               <MenuItem onClick={() => handleNavigate('/history')}>History</MenuItem>
             )}

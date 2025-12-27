@@ -24,6 +24,7 @@ const pathToMeta: PathToMeta = {
   '/uploads': { component: 'uploads', requireAuth: true },
   '/search': { component: 'search', requireAuth: true },
   '/history': { component: 'history', requireAuth: true },
+  '/data-grid': { component: 'data-grid', requireAuth: true },
 };
 
 type PageComponentProps = {
