@@ -12,11 +12,17 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
-import { ResetPasswordRequest, PASSWORD_MIN_LENGTH, PASSWORD_VALIDATION_MESSAGE } from 'shared/types/auth';
+import {
+  ResetPasswordRequest,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_VALIDATION_MESSAGE,
+} from 'shared/types/auth';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +30,8 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
 
   const isPasswordValid = password.length >= PASSWORD_MIN_LENGTH;
+  const showPasswordError = passwordTouched && !isPasswordValid;
+  const showConfirmPasswordError = confirmPasswordTouched && confirmPassword !== password;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +90,12 @@ const ResetPassword = () => {
             <Typography variant="body1" color="success.main">
               Your password has been reset successfully.
             </Typography>
-            <Button variant="contained" fullWidth size="large" onClick={() => replaceState('/login')}>
+            <Button
+              variant="contained"
+              fullWidth
+              size="large"
+              onClick={() => replaceState('/login')}
+            >
               Back to Login
             </Button>
           </Box>
@@ -101,10 +114,11 @@ const ResetPassword = () => {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => setPasswordTouched(true)}
               autoComplete="off"
               required
-              error={Boolean(password) && !isPasswordValid}
-              helperText={Boolean(password) && !isPasswordValid ? PASSWORD_VALIDATION_MESSAGE : ''}
+              error={showPasswordError}
+              helperText={showPasswordError ? PASSWORD_VALIDATION_MESSAGE : ''}
               slotProps={{
                 input: {
                   endAdornment: (
@@ -127,10 +141,11 @@ const ResetPassword = () => {
               type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              onBlur={() => setConfirmPasswordTouched(true)}
               autoComplete="off"
               required
-              error={Boolean(confirmPassword) && confirmPassword !== password}
-              helperText={Boolean(confirmPassword) && confirmPassword !== password ? 'Passwords do not match' : ''}
+              error={showConfirmPasswordError}
+              helperText={showConfirmPasswordError ? 'Passwords do not match' : ''}
               slotProps={{
                 input: {
                   endAdornment: (

@@ -10,11 +10,14 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
+import validator from 'validator';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
 import { useNotification } from 'client/components/NotificationContext';
 import rnaLogo from 'client/images/RNA-white-2.png';
 import { SignupRequest, PASSWORD_MIN_LENGTH, PASSWORD_VALIDATION_MESSAGE } from 'shared/types/auth';
+
+const EMAIL_VALIDATION_MESSAGE = 'Invalid email address';
 
 type SignupProps = {
   loadCookieSession: () => Promise<void>;
@@ -22,18 +25,29 @@ type SignupProps = {
 
 const Signup = ({ loadCookieSession }: SignupProps) => {
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState('');
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError } = useNotification();
 
+  const isEmailValid = validator.isEmail(email);
+  const showEmailError = emailTouched && !isEmailValid;
   const isPasswordValid = password.length >= PASSWORD_MIN_LENGTH;
+  const showPasswordError = passwordTouched && !isPasswordValid;
+  const showConfirmPasswordError = confirmPasswordTouched && confirmPassword !== password;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validator.isEmail(email)) {
+      setError(EMAIL_VALIDATION_MESSAGE);
+      return;
+    }
     if (!isPasswordValid) {
       setError(PASSWORD_VALIDATION_MESSAGE);
       return;
@@ -95,7 +109,10 @@ const Signup = ({ loadCookieSession }: SignupProps) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setEmailTouched(true)}
             required
+            error={showEmailError}
+            helperText={showEmailError ? EMAIL_VALIDATION_MESSAGE : ''}
           />
           <TextField
             fullWidth
@@ -103,9 +120,10 @@ const Signup = ({ loadCookieSession }: SignupProps) => {
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setPasswordTouched(true)}
             required
-            error={Boolean(password) && !isPasswordValid}
-            helperText={Boolean(password) && !isPasswordValid ? PASSWORD_VALIDATION_MESSAGE : ''}
+            error={showPasswordError}
+            helperText={showPasswordError ? PASSWORD_VALIDATION_MESSAGE : ''}
             slotProps={{
               input: {
                 endAdornment: (
@@ -128,9 +146,10 @@ const Signup = ({ loadCookieSession }: SignupProps) => {
             type={showConfirmPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={() => setConfirmPasswordTouched(true)}
             required
-            error={Boolean(confirmPassword) && confirmPassword !== password}
-            helperText={Boolean(confirmPassword) && confirmPassword !== password ? 'Passwords do not match' : ''}
+            error={showConfirmPasswordError}
+            helperText={showConfirmPasswordError ? 'Passwords do not match' : ''}
             slotProps={{
               input: {
                 endAdornment: (

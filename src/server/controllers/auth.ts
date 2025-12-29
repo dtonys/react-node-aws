@@ -1,7 +1,9 @@
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import express, { Router, Request, Response, NextFunction } from 'express';
+import dns from 'dns/promises';
 import lodashOmit from 'lodash/omit';
 import lodashChunk from 'lodash/chunk';
+import validator from 'validator';
 
 import { hashPassword, verifyPassword, encrypt, decrypt } from 'server/helpers/session';
 import {
@@ -22,6 +24,13 @@ import forgotPassword from 'server/email/templates/resetPassword';
 import { sendEmail } from 'server/email/mailer';
 
 const _30_DAYS_SECONDS = 60 * 60 * 24 * 30;
+
+const verifyEmailDomain = async (email: string): Promise<boolean> => {
+  const domain = email.split('@')[1];
+  const mxRecords = await dns.resolveMx(domain);
+  return mxRecords.length > 0;
+};
+
 type AuthControllerConfig = {
   dynamoDocClient: DynamoDBDocument;
 };
@@ -101,6 +110,13 @@ class AuthController {
     if (!email || !password || !confirmPassword) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: 'Invalid email address' });
+    }
+    const hasValidMx = await verifyEmailDomain(email).catch(() => false);
+    if (!hasValidMx) {
+      return res.status(400).json({ message: 'Email domain does not exist' });
+    }
     if (password.length < PASSWORD_MIN_LENGTH) {
       return res.status(400).json({ message: PASSWORD_VALIDATION_MESSAGE });
     }
@@ -179,6 +195,9 @@ class AuthController {
     const { email, password } = req.body as Partial<LoginRequest>;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
+    }
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: 'Invalid email address' });
     }
     if (password.length < PASSWORD_MIN_LENGTH) {
       return res.status(400).json({ message: PASSWORD_VALIDATION_MESSAGE });
@@ -274,7 +293,10 @@ class AuthController {
       if (!email) {
         return res.status(400).json({ message: 'Email is required' });
       }
-      const resetPasswordToken = encrypt(email!);
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ message: 'Invalid email address' });
+      }
+      const resetPasswordToken = encrypt(email);
       await this.dynamoDocClient.update({
         TableName: this.authTable,
         Key: { email, type: 'USER' },

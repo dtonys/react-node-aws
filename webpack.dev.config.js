@@ -18,6 +18,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     alias: {
       client: path.resolve(__dirname, 'src/client'),
+      shared: path.resolve(__dirname, 'src/shared'),
     },
   },
   module: {

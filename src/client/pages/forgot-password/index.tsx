@@ -1,17 +1,28 @@
 import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
 import { useState } from 'react';
+import validator from 'validator';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
 import { ForgotPasswordRequest } from 'shared/types/auth';
 
+const EMAIL_VALIDATION_MESSAGE = 'Invalid email address';
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const isEmailValid = validator.isEmail(email);
+  const showEmailError = emailTouched && !isEmailValid;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validator.isEmail(email)) {
+      setError(EMAIL_VALIDATION_MESSAGE);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     setSuccess(false);
@@ -65,7 +76,10 @@ const ForgotPassword = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
               required
+              error={showEmailError}
+              helperText={showEmailError ? EMAIL_VALIDATION_MESSAGE : ''}
             />
             {error && (
               <Typography color="error" variant="body2">
