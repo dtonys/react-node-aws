@@ -14,8 +14,8 @@ async function main() {
   // Initialize mailer with Resend API key
   init(process.env.RESEND_API_KEY);
 
-  const { html, subject } = verifyEmail({ email: 'fitcal007@gmail.com', token: '1234567890' });
-  await sendEmail({ to: 'fitcal007@gmail.com', subject, html });
+  const { html, subject } = verifyEmail({ email: 'dtonys@gmail.com', token: '1234567890' });
+  await sendEmail({ to: 'dtonys@gmail.com', subject, html });
 
   console.log('Email sent successfully');
 }

@@ -22,7 +22,7 @@ type SendEmailOptions = {
 };
 
 export async function sendEmail({
-  from = 'noreply@react-node-aws.com',
+  from = 'React Node AWS <noreply@react-node-aws.com>',
   to,
   subject,
   text,
