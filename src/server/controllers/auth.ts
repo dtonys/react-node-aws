@@ -13,6 +13,8 @@ import {
   ForgotPasswordRequest,
   VerifyEmailRequest,
   ResetPasswordRequest,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_VALIDATION_MESSAGE,
 } from 'shared/types/auth';
 
 import verifyEmail from 'server/email/templates/verifyEmail';
@@ -99,6 +101,9 @@ class AuthController {
     if (!email || !password || !confirmPassword) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return res.status(400).json({ message: PASSWORD_VALIDATION_MESSAGE });
+    }
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
@@ -174,6 +179,9 @@ class AuthController {
     const { email, password } = req.body as Partial<LoginRequest>;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return res.status(400).json({ message: PASSWORD_VALIDATION_MESSAGE });
     }
     const response = await this.dynamoDocClient.get({
       TableName: this.authTable,
@@ -318,6 +326,9 @@ class AuthController {
       return res
         .status(400)
         .json({ message: 'Email, token, password, and confirm password are required' });
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      return res.status(400).json({ message: PASSWORD_VALIDATION_MESSAGE });
     }
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });

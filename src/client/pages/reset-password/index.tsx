@@ -1,15 +1,29 @@
-import { Box, Container, TextField, Button, Link, Typography } from '@mui/material';
+import {
+  Box,
+  Container,
+  TextField,
+  Button,
+  Link,
+  Typography,
+  InputAdornment,
+  IconButton,
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 import { onLinkClick, replaceState } from 'client/helpers/routing';
 import fetchClient from 'client/helpers/fetchClient';
-import { ResetPasswordRequest } from 'shared/types/auth';
+import { ResetPasswordRequest, PASSWORD_MIN_LENGTH, PASSWORD_VALIDATION_MESSAGE } from 'shared/types/auth';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const isPasswordValid = password.length >= PASSWORD_MIN_LENGTH;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +34,12 @@ const ResetPassword = () => {
     const params = new URLSearchParams(window.location.search);
     const email = params.get('email');
     const token = params.get('token');
+
+    if (!isPasswordValid) {
+      setError(PASSWORD_VALIDATION_MESSAGE);
+      setIsLoading(false);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -78,20 +98,54 @@ const ResetPassword = () => {
             <TextField
               fullWidth
               label="New Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="off"
               required
+              error={Boolean(password) && !isPasswordValid}
+              helperText={Boolean(password) && !isPasswordValid ? PASSWORD_VALIDATION_MESSAGE : ''}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             <TextField
               fullWidth
               label="Confirm New Password"
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="off"
               required
+              error={Boolean(confirmPassword) && confirmPassword !== password}
+              helperText={Boolean(confirmPassword) && confirmPassword !== password ? 'Passwords do not match' : ''}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
             {error && (
               <Typography color="error" variant="body2">

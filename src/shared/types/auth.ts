@@ -1,3 +1,6 @@
+export const PASSWORD_MIN_LENGTH = 5;
+export const PASSWORD_VALIDATION_MESSAGE = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
+
 export type SignupRequest = {
   email: string;
   password: string;
