@@ -24,7 +24,7 @@ export default defineConfig([
     languageOptions: {
       ...config.languageOptions,
       parserOptions: {
-        ...config.languageOptions!.parserOptions,
+        ...(config.languageOptions || {})!.parserOptions,
         project: ['./src/client/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
@@ -45,5 +45,11 @@ export default defineConfig([
     },
   },
   pluginReact.configs.flat.recommended,
+  {
+    // React 17+ with new JSX transform doesn't require React in scope
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+    },
+  },
   prettierConfig,
 ]);
