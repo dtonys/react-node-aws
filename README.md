@@ -1,12 +1,28 @@
-# Static Site
+<p align="center">
+  <img src="./src/client/images/RNA-white-2.png" width="200" />
+</p>
 
-A clean boilerplate for building and deploying static websites using React, MUI, and AWS (S3, CloudFront, Route53).
+### The ultimate boilerplate for modern fullstack development.
 
-## Tech Stack
+# Tech Stack
+
+<p align="center">
+  <img src="./src/client/images/Tech Stack - Frontend.png" />
+</p>
 
 - **Frontend**: React 19, MUI (Material UI)
 - **Build**: Webpack, TypeScript, Babel
 - **Infrastructure**: AWS CloudFormation (S3, CloudFront, Route53, ACM)
+
+## Overview
+
+This branch (frontend-master) is a simplified version of the react-node-aws project. This branch focuses on static websites.
+
+This is a great place to start for getting a personal website, or other frontend content deployed online.
+
+Use [Getting Started](#getting-started) to get your app running locally.
+
+When you are ready to deploy, move on to [AWS Infrastructure Setup](#aws-infrastructure-setup)
 
 ## Getting Started
 
@@ -18,8 +34,8 @@ A clean boilerplate for building and deploying static websites using React, MUI,
 ### Installation
 
 ```bash
-git clone <your-repo-url>
-cd static-site
+git clone -b master-frontend --single-branch git@github.com:dtonys/react-node-aws.git
+cd react-node-aws
 nvm use 24
 npm install
 ```
@@ -46,7 +62,36 @@ Built assets will be output to the `public/` directory.
 
 ## AWS Infrastructure Setup
 
-### 1. Configure CloudFormation Parameters
+### 1. AWS Authentication
+
+Create a user in IAM (e.g., `web-admin`) and give it `AdministratorAccess`. This user will be used to develop locally.
+
+Create an access and secret key for the AWS CLI. Install the CLI and use the keys to authenticate.
+
+```bash
+brew install awscli
+aws configure
+```
+
+Update your `.zshrc` or equivalent.
+
+```bash
+export AWS_PROFILE=web-admin
+```
+
+### 2. Domain Name Purchase
+
+1. Navigate to [Route 53](https://console.aws.amazon.com/route53/) in the AWS Console
+2. Click "Registered domains" in the left sidebar
+3. Click "Register domains"
+4. Search for your desired domain name and select one
+5. Complete the registration process
+
+> **Tip**: If cost is a concern, look for cheaper TLDs like `.click`, `.link`, or `.site` which are often under $5/year.
+
+After registration, Route 53 will automatically create a Hosted Zone for your domain. Note the **Hosted Zone ID** - you'll need it for the CloudFormation configuration.
+
+### 3. Configure CloudFormation Parameters
 
 Update the following files with your AWS account details:
 
@@ -64,7 +109,7 @@ DomainName: your-domain.com
 HostedZoneId: ZXXXXXXXXXXXXX # Your Route53 Hosted Zone ID
 ```
 
-### 2. Create SSL Certificate
+### 4. Create SSL Certificate
 
 Create an ACM certificate for CloudFront (must be in us-east-1):
 
@@ -78,7 +123,7 @@ This will:
 - Wait for the certificate to be validated (5-30 minutes)
 - Output the Certificate ARN
 
-### 3. Deploy Infrastructure
+### 5. Deploy Infrastructure
 
 Deploy the S3 bucket, CloudFront distribution, and Route53 records:
 
@@ -93,7 +138,7 @@ This creates:
 - Route53 A records for apex and www domains
 - SPA fallback (404/403 → index.html)
 
-### 4. Deploy Assets
+### 6. Deploy Assets
 
 Build and deploy your static site:
 
@@ -107,10 +152,14 @@ This will:
 2. Sync assets to S3 with appropriate cache headers
 3. Invalidate CloudFront cache
 
+### 7. Deployment Complete
+
+Your site is now live! From here, you can update the source code and run `npm run deploy` to publish subsequent updates.
+
 ## Project Structure
 
 ```
-static-site/
+react-node-aws/
 ├── infra/
 │   ├── cloudformation-cert.yml  # ACM certificate template
 │   ├── cloudformation.yml       # Main infrastructure template

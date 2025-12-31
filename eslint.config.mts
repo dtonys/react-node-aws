@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
-import pluginN from 'eslint-plugin-n';
 import prettierConfig from 'eslint-config-prettier';
 import { defineConfig } from 'eslint/config';
 
@@ -17,7 +16,6 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node,
       },
     },
   },
@@ -27,7 +25,7 @@ export default defineConfig([
       ...config.languageOptions,
       parserOptions: {
         ...config.languageOptions!.parserOptions,
-        project: ['./src/server/tsconfig.json', './src/client/tsconfig.json'],
+        project: ['./src/client/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -47,13 +45,5 @@ export default defineConfig([
     },
   },
   pluginReact.configs.flat.recommended,
-  // Inject Node.js rules into the backend
-  {
-    files: ['src/server/**/*.{js,mjs,cjs,ts,mts,cts}'],
-    ...pluginN.configs['flat/recommended-script'],
-    rules: {
-      'n/no-missing-import': 'off', // TypeScript handles import resolution
-    },
-  },
   prettierConfig,
 ]);
