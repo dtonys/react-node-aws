@@ -47,6 +47,12 @@ export default defineConfig([
     },
   },
   pluginReact.configs.flat.recommended,
+  {
+    // React 17+ with new JSX transform doesn't require React in scope
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+    },
+  },
   // Inject Node.js rules into the backend
   {
     files: ['src/server/**/*.{js,mjs,cjs,ts,mts,cts}'],
