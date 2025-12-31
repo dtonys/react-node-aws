@@ -1,6 +1,0 @@
-{
-  "watch": ["src/server"],
-  "ext": "ts,json",
-  "ignore": ["node_modules", "dist", "public", "src/client"],
-  "delay": 1000
-}

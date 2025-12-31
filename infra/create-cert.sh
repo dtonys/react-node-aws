@@ -79,9 +79,14 @@ create_cert() {
     echo -e "${GREEN}Certificate ARN: $CERT_ARN${NC}"
 }
 
-# Create both certificates
-create_cert "react-node-aws-cert" "us-west-1" "ALB"
-create_cert "react-node-aws-cert-cloudfront" "us-east-1" "CloudFront"
+# Create CloudFront certificate (must be in us-east-1)
+create_cert "static-site-cert" "us-east-1" "CloudFront"
 
 echo ""
 echo -e "${GREEN}Done!${NC}"
+echo ""
+echo -e "${BLUE}Next steps:${NC}"
+echo -e "  1. Copy the Certificate ARN above"
+echo -e "  2. Update CloudFrontCertificateArn in cloudformation.yml or pass it to deploy script"
+echo -e "  3. Run: ./infra/deploy.sh"
+

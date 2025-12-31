@@ -1,22 +1,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ACM Certificate for react-node-aws application'
+Description: 'ACM Certificate for static-site application'
 
 ##############################################
 # This template creates an ACM certificate with DNS validation.
-# Run ./create-cert.sh to create certs in both regions:
-#   - us-west-1 for ALB
-#   - us-east-1 for CloudFront
+# Run ./create-cert.sh to create cert in us-east-1 for CloudFront.
 ##############################################
 
 Parameters:
   DomainName:
     Type: String
-    Default: react-node-aws.com
+    Default: static-site.com
     Description: Domain name for the application
 
   HostedZoneId:
     Type: String
-    Default: Z061643331OITX7Z4V6YL
+    Default: ZXXXXXXXXXXXXX
     Description: Existing Route53 Hosted Zone ID
 
 Resources:

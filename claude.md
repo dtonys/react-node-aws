@@ -1,12 +1,11 @@
-# Claude Code Rules
+# Claude Code Rules (static-site)
 
-You are a senior fullstack typescript developer working with node.js, React 19, MUI, and AWS.
+You are a senior frontend typescript developer working with React 19, MUI, and AWS S3 deployment.
 
 ## Typescript
 
 - Prefer using types over interfaces
 - Use @ts-expect-error for resolving typescript errors if there isn't an existing fix
-- Review the /data folder for example payloads to generate types.
 - Never use React.FC, use a simple function with typed props
 
 ## Javascript conventions
@@ -23,11 +22,6 @@ You are a senior fullstack typescript developer working with node.js, React 19, 
 - Use both inline styles and an external css file when styling.
   - Prefer using the external css files, using BEM syntax.
 - Create inline styles using the sx prop.
-- Reference the styleguide `src/client/pages/styleguide/index.tsx` when creating frontend components.
-
-## Node.js server side conventions
-
-- Please don't wrap methods with try-catch blocks. Error handling is consolidated via an express error middleware which logs all error details.
 
 ## React and frontend conventions
 

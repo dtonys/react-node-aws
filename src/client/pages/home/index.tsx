@@ -1,35 +1,22 @@
-import { RefObject } from 'react';
-import { Box, Container, Typography } from '@mui/material';
-import Nav from 'client/components/Nav';
+import { Box, Typography } from '@mui/material';
 
-type HomeProps = {
-  currentUserRef: RefObject<Record<string, any> | null>;
-  loadCookieSession: () => Promise<void>;
-};
-
-const Home = ({ currentUserRef, loadCookieSession }: HomeProps) => {
-  const currentUser = currentUserRef.current;
-  const userEmail = currentUser?.email || '';
-  const isEmailVerified = Boolean(currentUser?.emailVerified);
-
+const HomePage = () => {
   return (
-    <Box className="app">
-      <Nav
-        userEmail={userEmail}
-        isEmailVerified={isEmailVerified}
-        loadCookieSession={loadCookieSession}
-      />
-      <Box className="content">
-        <Container maxWidth="sm">
-          <Box sx={{ py: 3 }}>
-            <Typography variant="h4" component="h1">
-              Welcome
-            </Typography>
-          </Box>
-        </Container>
-      </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+      }}
+    >
+      <Typography variant="h3" sx={{ mb: 4 }}>
+        Welcome
+      </Typography>
     </Box>
   );
 };
 
-export default Home;
+export { HomePage };
+export default HomePage;
